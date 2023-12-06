@@ -1,4 +1,4 @@
-use aoc::{day_1_1, day_1_2};
+use day1::{day_1_1, day_1_2};
 use std::fs;
 
 fn main() {
