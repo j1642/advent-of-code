@@ -1,9 +1,8 @@
-use std::fs;
 use aoc::{day_1_1, day_1_2};
+use std::fs;
 
 fn main() {
-    let text = fs::read_to_string("input/day1.1.txt")
-        .expect("Should have read the file");
+    let text = fs::read_to_string("day1.txt").expect("Should have read the file");
     let _short_text = "sevenine
         ";
     let day1_1_ans = day_1_1(&text);

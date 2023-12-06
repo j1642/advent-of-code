@@ -35,7 +35,7 @@ pub fn day_1_1(text: &str) -> i32 {
 pub fn day_1_2(text: &str) -> i32 {
     let mut total = 0;
     //let spelled_nums = ["zero", "one", "two", "three", "four", "five", "six", "seven",
-                //"eight", "nine"];
+    //"eight", "nine"];
     let mut letters = String::with_capacity(5);
 
     for line in text.lines() {
