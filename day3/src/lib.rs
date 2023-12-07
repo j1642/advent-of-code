@@ -49,45 +49,7 @@ pub fn day_3_1(text: &str) -> i32 {
             if rows[row][col] >= 0 {
                 continue;
             }
-            // Need north and south for single digit numbers
-            let mut directions: Vec<&str> = vec!["ne", "e", "se", "n", "s", "sw", "w", "nw"];
-            if col == 0 {
-                let (no_west_directions, _) = directions.split_at_mut(5);
-                directions = no_west_directions.to_vec();
-            } else if col == rows[0].len() - 1 {
-                let (_, no_east_directions) = directions.split_at_mut(3);
-                directions = no_east_directions.to_vec();
-            }
-            if row == 0 {
-                directions.retain(|&x| !x.contains("n"));
-            }
-            if row == rows.len() - 1 {
-                directions.retain(|&x| !x.contains("s"));
-            }
-            // Bugs are likely
-            // A multi-digit num directly above/below a symbol is counted once
-            if row > 0 && 0 < col && col < rows[0].len() {
-                let north = rows[row - 1][col];
-                let ne = rows[row - 1][col + 1];
-                let nw = rows[row - 1][col - 1];
-                if north == ne && ne == nw {
-                    // Arbitrarily remove NW or NE
-                    directions.retain(|&x| x != "nw" && x != "n");
-                } else if north == ne || north == nw {
-                    directions.retain(|&x| x != "n");
-                }
-            }
-            if row < rows.len() - 1 && 0 < col && col < rows[0].len() {
-                let south = rows[row + 1][col];
-                let se = rows[row + 1][col + 1];
-                let sw = rows[row + 1][col - 1];
-                if south == se && se == sw {
-                    // Arbitrarily remove SW or SE
-                    directions.retain(|&x| x != "sw" && x != "s");
-                } else if south == se || south == sw {
-                    directions.retain(|&x| x != "s");
-                }
-            }
+            let directions = limit_directions(row, col, &rows);
             for direction in directions {
                 let val;
                 match direction {
@@ -123,46 +85,7 @@ pub fn day_3_2(text: &str) -> i32 {
             if rows[row][col] != -2 {
                 continue;
             }
-            // Need north and south for single digit numbers
-            let mut directions: Vec<&str> = vec!["ne", "e", "se", "n", "s", "sw", "w", "nw"];
-            if col == 0 {
-                let (no_west_directions, _) = directions.split_at_mut(5);
-                directions = no_west_directions.to_vec();
-            } else if col == rows[0].len() - 1 {
-                let (_, no_east_directions) = directions.split_at_mut(3);
-                directions = no_east_directions.to_vec();
-            }
-            if row == 0 {
-                directions.retain(|&x| !x.contains("n"));
-            }
-            if row == rows.len() - 1 {
-                directions.retain(|&x| !x.contains("s"));
-            }
-            // Bugs are likely
-            // A multi-digit num directly above/below a symbol is counted once
-            if row > 0 && 0 < col && col < rows[0].len() {
-                let north = rows[row - 1][col];
-                let ne = rows[row - 1][col + 1];
-                let nw = rows[row - 1][col - 1];
-                if north == ne && ne == nw {
-                    // Arbitrarily remove NW or NE
-                    directions.retain(|&x| x != "nw" && x != "n");
-                } else if north == ne || north == nw {
-                    directions.retain(|&x| x != "n");
-                }
-            }
-            if row < rows.len() - 1 && 0 < col && col < rows[0].len() {
-                let south = rows[row + 1][col];
-                let se = rows[row + 1][col + 1];
-                let sw = rows[row + 1][col - 1];
-                if south == se && se == sw {
-                    // Arbitrarily remove SW or SE
-                    directions.retain(|&x| x != "sw" && x != "s");
-                } else if south == se || south == sw {
-                    directions.retain(|&x| x != "s");
-                }
-            }
-
+            let directions = limit_directions(row, col, &rows);
             let mut count_adjacent_nums = 0;
             let mut pdt = 1;
 
@@ -190,4 +113,47 @@ pub fn day_3_2(text: &str) -> i32 {
         }
     }
     return total;
+}
+
+fn limit_directions(row: usize, col: usize, rows: &Vec<Vec<i32>>) -> Vec<&str> {
+    // Return a set of compass directions where an adjacent number might be
+    // Need north and south for single digit numbers
+    let mut directions: Vec<&str> = vec!["ne", "e", "se", "n", "s", "sw", "w", "nw"];
+    if col == 0 {
+        let (no_west_directions, _) = directions.split_at_mut(5);
+        directions = no_west_directions.to_vec();
+    } else if col == rows[0].len() - 1 {
+        let (_, no_east_directions) = directions.split_at_mut(3);
+        directions = no_east_directions.to_vec();
+    }
+    if row == 0 {
+        directions.retain(|&x| !x.contains("n"));
+    }
+    if row == rows.len() - 1 {
+        directions.retain(|&x| !x.contains("s"));
+    }
+    // A multi-digit num directly above/below a symbol is counted once
+    if row > 0 && 0 < col && col < rows[0].len() {
+        let north = rows[row - 1][col];
+        let ne = rows[row - 1][col + 1];
+        let nw = rows[row - 1][col - 1];
+        if north == ne && ne == nw {
+            // Arbitrarily remove NW or NE
+            directions.retain(|&x| x != "nw" && x != "n");
+        } else if north == ne || north == nw {
+            directions.retain(|&x| x != "n");
+        }
+    }
+    if row < rows.len() - 1 && 0 < col && col < rows[0].len() {
+        let south = rows[row + 1][col];
+        let se = rows[row + 1][col + 1];
+        let sw = rows[row + 1][col - 1];
+        if south == se && se == sw {
+            // Arbitrarily remove SW or SE
+            directions.retain(|&x| x != "sw" && x != "s");
+        } else if south == se || south == sw {
+            directions.retain(|&x| x != "s");
+        }
+    }
+    return directions;
 }
