@@ -1,4 +1,4 @@
-use day4::day_4_1;
+use day4::{day_4_1, day_4_2};
 use std::fs;
 
 fn main() {
@@ -15,4 +15,9 @@ Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11";
     let ans_4_1 = day_4_1(&text);
     assert_eq!(ans_4_1, 21558);
     println!("day 4_1 = {}", ans_4_1);
+
+    assert_eq!(day_4_2(short_text), 30);
+    let ans_4_2 = day_4_2(&text);
+    assert_eq!(day_4_2(&text), 10_425_665);
+    println!("day 4_2 = {}", ans_4_2);
 }
