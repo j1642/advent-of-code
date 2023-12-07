@@ -5,6 +5,7 @@ pub fn day_3_1(text: &str) -> i32 {
 
     for line in text.lines() {
         let mut row = Vec::with_capacity(line.len());
+        row.push(0);
         let mut num = 0;
         for c in line.chars() {
             if c.is_ascii_digit() {
@@ -27,55 +28,53 @@ pub fn day_3_1(text: &str) -> i32 {
                 row.push(-1);
             }
         }
+        row.push(0);
         rows.push(row);
-    }
-    // Looking for weird values to fix off-by-16 error
-    for i in 0..rows.len() {
-        for j in 0..rows[0].len() {
-            //print!("{} ", rows[i][j]);
-            if (rows[i][j] - 16) % 100 == 0 {
-                //println!("{:?}", rows[i]);
-                break;
-            }
-        }
-        //println!("");
     }
 
     for row in 0..rows.len() {
+        if rows[row].len() != rows[0].len() {
+            panic!("vectors are not the same length");
+        }
         for col in 0..rows[0].len() {
             if rows[row][col] == -1 {
-                // Check north-east, east, SE, SW, W, and NW
-                // Avoid north and south because of redundancy errors
-                let mut directions: Vec<&str> = vec!["ne", "e", "se", "sw", "w", "nw"];
+                // Need north and south for single digit numbers
+                let mut directions: Vec<&str> = vec!["ne", "e", "se", "n", "s", "sw", "w", "nw"];
                 if col == 0 {
-                    let (no_west_directions, _) = directions.split_at_mut(3);
+                    let (no_west_directions, _) = directions.split_at_mut(5);
                     directions = no_west_directions.to_vec();
-                } else if col == rows[0].len() {
+                } else if col == rows[0].len() - 1 {
                     let (_, no_east_directions) = directions.split_at_mut(3);
                     directions = no_east_directions.to_vec();
                 }
                 if row == 0 {
                     directions.retain(|&x| !x.contains("n"));
-                } else if row == rows.len() {
+                }
+                if row == rows.len() - 1 {
                     directions.retain(|&x| !x.contains("s"));
                 }
-                // A num directly above/below a symbol is counted once
-                if row > 0 {
+                // Bugs are likely
+                // A multi-digit num directly above/below a symbol is counted once
+                if row > 0 && 0 < col && col < rows[0].len() {
                     let north = rows[row - 1][col];
                     let ne = rows[row - 1][col + 1];
                     let nw = rows[row - 1][col - 1];
                     if north == ne && ne == nw {
                         // Arbitrarily remove NW or NE
-                        directions.retain(|&x| x != "nw");
+                        directions.retain(|&x| x != "nw" && x != "n");
+                    } else if north == ne || north == nw {
+                        directions.retain(|&x| x != "n");
                     }
                 }
-                if row < rows[0].len() {
+                if row < rows.len() - 1 && 0 < col && col < rows[0].len() {
                     let south = rows[row + 1][col];
                     let se = rows[row + 1][col + 1];
                     let sw = rows[row + 1][col - 1];
                     if south == se && se == sw {
                         // Arbitrarily remove SW or SE
-                        directions.retain(|&x| x != "sw");
+                        directions.retain(|&x| x != "sw" && x != "s");
+                    } else if south == se || south == sw {
+                        directions.retain(|&x| x != "s");
                     }
                 }
                 for direction in directions {
@@ -87,6 +86,8 @@ pub fn day_3_1(text: &str) -> i32 {
                         "sw" => val = rows[row + 1][col - 1],
                         "w" => val = rows[row][col - 1],
                         "nw" => val = rows[row - 1][col - 1],
+                        "n" => val = rows[row - 1][col],
+                        "s" => val = rows[row + 1][col],
                         &_ => panic!("invalid direction"),
                     }
                     if val > 0 {
