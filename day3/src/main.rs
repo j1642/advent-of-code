@@ -1,4 +1,4 @@
-use day3::day_3_1;
+use day3::{day_3_1, day_3_2};
 use std::fs;
 
 fn main() {
@@ -13,10 +13,11 @@ fn main() {
 ......755.
 ...$.*....
 .664.598..";
+
     assert_eq!(day_3_1(short_text), 4361);
-    assert_eq!(day_3_1(&text), 517021);
-    println!("day 3_1 = {}", day_3_1(&text));
-    assert_eq!(day_3_1("12.......*..
+    assert_eq!(
+        day_3_1(
+            "12.......*..
 +.........34
 .......-12..
 ..78........
@@ -27,5 +28,18 @@ fn main() {
 ............
 2.2......12.
 .*.........*
-1.1..503+.56"), 925);
+1.1..503+.56"
+        ),
+        925
+    );
+
+    let ans_3_1 = day_3_1(&text);
+    assert_eq!(ans_3_1, 517021);
+    println!("day 3_1 = {}", ans_3_1);
+
+    // Part 2
+    assert_eq!(day_3_2(short_text), 467835);
+    let ans_3_2 = day_3_2(&text);
+    assert_eq!(ans_3_2, 81_296_995);
+    println!("day 3_2 = {}", ans_3_2);
 }
