@@ -4,8 +4,7 @@ use std::time::Instant;
 
 fn main() {
     let text = fs::read_to_string("day5.txt").expect("Should have read the file");
-    let short_text =
-"seeds: 79 14 55 13
+    let short_text = "seeds: 79 14 55 13
 
 seed-to-soil map:
 50 98 2
@@ -46,19 +45,13 @@ humidity-to-location map:
     println!("day 5_1 = {}", ans_5_1);
 
     // Part 2
-    let start = Instant::now();
-    for _ in 0..100 {
-        day_5_2(short_text);
-    }
-    let elapsed = start.elapsed();
-    println!("day_5_2() took {}µs", elapsed.as_micros());
     assert_eq!(day_5_2(short_text), 46);
-    /*
+
     let start = Instant::now();
     let ans_5_2 = day_5_2(&text);
     let elapsed = start.elapsed();
+
+    assert_eq!(ans_5_2, 6_082_852);
     println!("day_5_2() took {}s", elapsed.as_secs());
-    //assert_eq!(ans_5_2, );
     println!("day 5_2 = {}", ans_5_2);
-    */
 }
