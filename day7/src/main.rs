@@ -1,0 +1,26 @@
+use day7::day_7_1;
+use std::fs;
+
+fn main() {
+    let _text = fs::read_to_string("day7.txt").expect("Should have read the file");
+    let short_text = "32T3K 765
+T55J5 684
+KK677 28
+KTJJT 220
+QQQJA 483";
+
+    assert_eq!(day_7_1(short_text), 288);
+
+    /*
+    let ans_7_1 = day_7_1(&text);
+    assert_eq!(ans_7_1, 2_449_072);
+    println!("day 7_1 = {}", ans_7_1);
+
+    // Part 2
+    assert_eq!(day_7_2(short_text), 71503);
+
+    let ans_7_2 = day_7_2(&text);
+    assert_eq!(ans_7_2, 33_149_731);
+    println!("day 7_2 = {}", ans_7_2);
+    */
+}
