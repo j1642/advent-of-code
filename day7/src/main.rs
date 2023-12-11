@@ -1,4 +1,4 @@
-use day7::day_7_1;
+use day7::{day_7_1, day_7_2};
 use std::fs;
 
 fn main() {
@@ -38,12 +38,10 @@ JJJJ2 41"
     assert_eq!(ans_7_1, 253_603_890);
     println!("day 7_1 = {}", ans_7_1);
 
-    /*
     // Part 2
-    assert_eq!(day_7_2(short_text), 71503);
+    assert_eq!(day_7_2(short_text), 5905);
 
     let ans_7_2 = day_7_2(&text);
-    assert_eq!(ans_7_2, 33_149_731);
+    assert_eq!(ans_7_2, 253_630_098);
     println!("day 7_2 = {}", ans_7_2);
-    */
 }
