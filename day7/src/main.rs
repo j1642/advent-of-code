@@ -10,8 +10,9 @@ KTJJT 220
 QQQJA 483";
 
     assert_eq!(day_7_1(short_text), 6440);
-    /*
-    assert_eq!(day_7_1("2345A 1
+    assert_eq!(
+        day_7_1(
+            "2345A 1
 Q2KJJ 13
 Q2Q2Q 19
 T3T3J 17
@@ -29,12 +30,13 @@ AAAAJ 59
 AAAAA 61
 2AAAA 23
 2JJJJ 53
-JJJJ2 41"), 6592);
-*/
-    //let ans_7_1 = day_7_1(&text);
-    //assert_eq!(ans_7_1, );
-    //println!("day 7_1 = {}", ans_7_1);
-    //println!("too low:  252555683");
+JJJJ2 41"
+        ),
+        6592
+    );
+    let ans_7_1 = day_7_1(&text);
+    assert_eq!(ans_7_1, 253_603_890);
+    println!("day 7_1 = {}", ans_7_1);
 
     /*
     // Part 2
