@@ -25,7 +25,7 @@ fn recurse_pt1(nums: &Vec<i64>) -> i64 {
         differences.push(nums[i + 1] - nums[i]);
     }
 
-    return differences[differences.len() - 1] + recurse(&differences);
+    return differences[differences.len() - 1] + recurse_pt1(&differences);
 }
 
 pub fn day_9_2(text: &str) -> i64 {
@@ -39,7 +39,7 @@ pub fn day_9_2(text: &str) -> i64 {
             .map(|s| s.parse::<i64>().unwrap_or_default())
             .collect::<Vec<i64>>();
 
-        let next_num = orig_nums[orig_nums.len() - 1] + recurse_pt2(&orig_nums);
+        let next_num = orig_nums[0] - recurse_pt2(&orig_nums);
         total += next_num;
     }
     return total;
@@ -55,7 +55,7 @@ fn recurse_pt2(nums: &Vec<i64>) -> i64 {
         differences.push(nums[i + 1] - nums[i]);
     }
 
-    return differences[differences.len() - 1] + recurse(&differences);
+    return differences[0] - recurse_pt2(&differences);
 }
 
 fn contains_only_zeroes(nums: &Vec<i64>) -> bool {

@@ -1,5 +1,4 @@
-use day9::day_9_1;
-//use std::env;
+use day9::{day_9_1, day_9_2};
 use std::fs;
 
 fn main() {
@@ -14,13 +13,11 @@ fn main() {
     assert_eq!(ans_9_1, 2_174_807_968);
     println!("day 9_1 = {}", ans_9_1);
 
+    // Part 2
     assert_eq!(day_9_2(short_text), 2);
-    /*
-
     //env::set_var("RUST_BACKTRACE", "1");
 
     let ans_9_2 = day_9_2(&text);
-    assert_eq!(ans_9_2, 12_324_145_107_121);
+    assert_eq!(ans_9_2, 1208);
     println!("day 9_2 = {}", ans_9_2);
-    */
 }
