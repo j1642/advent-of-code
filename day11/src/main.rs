@@ -16,14 +16,7 @@ fn main() {
 
     assert_eq!(day_11_1(short_text), 374);
 
-    let start = std::time::Instant::now();
-    let mut ans_11_1 = 0;
-    for _ in 0..50 {
-        ans_11_1 = day_11_1(&text);
-    }
-    let elapsed = start.elapsed().as_millis();
-    println!("elapsed: {}ms", elapsed);
-
+    let ans_11_1 = day_11_1(&text);
     assert_eq!(ans_11_1, 9_543_156);
     println!("day 11_1 = {}", ans_11_1);
 
