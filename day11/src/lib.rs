@@ -20,7 +20,8 @@ pub fn day_11_1(text: &str) -> i32 {
         are_rows_empty.push(is_row_empty);
     }
 
-    // Adjust for new, empty rows
+    // Adjust for new, empty rows. Call rev() so the wrong values can't bubble
+    // up to where they would increase more than desired
     for (row, is_row_empty) in are_rows_empty.iter().enumerate().rev() {
         if *is_row_empty {
             for i in 0..galaxy_coords.len() {
