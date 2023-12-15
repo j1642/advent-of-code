@@ -28,24 +28,7 @@ pub fn day_11_1(text: &str) -> u32 {
         }
     }
 
-    //println!("len_are_cols_empty: {}", are_cols_empty.len());
-
-    // TODO: change to iter over galaxy (x,y) and increase as needed
-    // O(cols) to O(rows*cols^2) insertion of new, empty cols
-    for (col, is_col_empty) in are_cols_empty.iter().enumerate().rev() {
-        //println!("col, is_empty: {}, {}", col, is_col_empty);
-        if *is_col_empty {
-            for row in 0..matrix.len() {
-                matrix[row].insert(col, '.');
-            }
-        }
-    }
-    /*
-    for row in 0..matrix.len() {
-        println!("{:?}", matrix[row]);
-    }
-    */
-    // Get list of all galaxy x and y coordinates
+    // Get list of all galaxy coordinates
     let mut galaxy_coords: Vec<(i32, i32)> = vec![];
     for row in 0..matrix.len() {
         for col in 0..matrix[0].len() {
@@ -54,6 +37,22 @@ pub fn day_11_1(text: &str) -> u32 {
             }
         }
     }
+
+    // O(cols) to O(cols*galaxies) adjust for new, empty cols
+    for (col, is_col_empty) in are_cols_empty.iter().enumerate().rev() {
+        if *is_col_empty {
+            for i in 0..galaxy_coords.len() {
+                if galaxy_coords[i].1 > (col as i32) {
+                    galaxy_coords[i].1 += 1;
+                }
+            }
+        }
+    }
+    /*
+    for row in 0..matrix.len() {
+        println!("{:?}", matrix[row]);
+    }
+    */
     // Loop over each pair of galaxies (1/2 n^2 style) to find distance
     let mut distance_sum = 0;
     for i in 0..galaxy_coords.len() - 1 {
