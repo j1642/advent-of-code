@@ -61,6 +61,12 @@ fn traverse_q(
 ) {
     // Replace splitters with impassable squares after each is hit
     let (direction, cur_row, cur_col) = dir_coords;
+    if matrix.len() <= cur_row {
+        return;
+    }
+    if  matrix[0].len() <= cur_col {
+        return;
+    }
 
     if direction == 'n' {
         let mut chr;
@@ -70,9 +76,7 @@ fn traverse_q(
             match chr {
                 '-' => {
                     matrix[row][cur_col] = 'X';
-                    if cur_col < matrix[0].len() - 1 {
-                        q.push_back(('e', row, cur_col + 1));
-                    }
+                    q.push_back(('e', row, cur_col + 1));
                     if cur_col > 0 {
                         q.push_back(('w', row, cur_col - 1));
                     }
@@ -88,9 +92,7 @@ fn traverse_q(
                     break;
                 }
                 '/' => {
-                    if cur_col < matrix[0].len() - 1 {
-                        q.push_back(('e', row, cur_col + 1));
-                    }
+                    q.push_back(('e', row, cur_col + 1));
                     break;
                 }
                 'X' => {
@@ -115,15 +117,11 @@ fn traverse_q(
                     if cur_row > 0 {
                         q.push_back(('n', cur_row - 1, col));
                     }
-                    if cur_row < matrix.len() - 1 {
-                        q.push_back(('s', cur_row + 1, col));
-                    }
+                    q.push_back(('s', cur_row + 1, col));
                     break;
                 }
                 '\\' => {
-                    if cur_row < matrix.len() - 1 {
-                        q.push_back(('s', cur_row + 1, col));
-                    }
+                    q.push_back(('s', cur_row + 1, col));
                     break;
                 }
                 '/' => {
@@ -148,9 +146,7 @@ fn traverse_q(
             match chr {
                 '-' => {
                     matrix[row][cur_col] = 'X';
-                    if cur_col < matrix[0].len() - 1 {
-                        q.push_back(('e', row, cur_col + 1));
-                    }
+                    q.push_back(('e', row, cur_col + 1));
                     if cur_col > 0 {
                         q.push_back(('w', row, cur_col - 1));
                     }
@@ -160,9 +156,7 @@ fn traverse_q(
                     continue;
                 }
                 '\\' => {
-                    if cur_col < matrix[0].len() - 1 {
-                        q.push_back(('e', row, cur_col + 1));
-                    }
+                    q.push_back(('e', row, cur_col + 1));
                     break;
                 }
                 '/' => {
@@ -193,9 +187,7 @@ fn traverse_q(
                     if cur_row > 0 {
                         q.push_back(('n', cur_row - 1, col));
                     }
-                    if cur_row < matrix.len() - 1 {
-                        q.push_back(('s', cur_row + 1, col));
-                    }
+                    q.push_back(('s', cur_row + 1, col));
                     break;
                 }
                 '\\' => {
@@ -205,9 +197,7 @@ fn traverse_q(
                     break;
                 }
                 '/' => {
-                    if cur_row < matrix.len() - 1 {
-                        q.push_back(('s', cur_row + 1, col));
-                    }
+                    q.push_back(('s', cur_row + 1, col));
                     break;
                 }
                 'X' => {
