@@ -115,7 +115,7 @@ fn roll_north(matrix: &mut Vec<Vec<char>>) {
     }
 }
 
-fn build_matrix(text: &str) -> Vec<Vec<char>> {
+pub fn build_matrix(text: &str) -> Vec<Vec<char>> {
     let mut matrix: Vec<Vec<char>> = vec![];
     for line in text.lines() {
         let row: Vec<char> = line.chars().collect();
