@@ -15,13 +15,15 @@ fn main() {
 4564679986453
 1224686865563
 2546548887735
-4322674655533";
+4322674655533"
+        .trim();
 
     assert_eq!(day_17_1(example), 102);
 
-    //let ans_17_1 = day_17_1(&text);
+    let ans_17_1 = day_17_1(&text);
     //assert_eq!(ans_17_1, );
-    //println!("day 17_1 = {}", ans_17_1);
+    println!("day 17_1 = {}", ans_17_1);
+    println!("ans < 1049");
 
     /*
     // Part 2
