@@ -1,18 +1,122 @@
-pub fn day_18_1_new(text: &str) -> u32 {
+fn change_height(v: &mut Vec<[usize; 2]>, low_height: usize, high_height: usize, cur_width: usize) {
+    for h in low_height..=high_height {
+        // First value found
+        if v[h][0] == usize::MAX {
+            v[h][0] = cur_width;
+        // Second value found
+        } else if v[h][1] == usize::MAX {
+            if cur_width < v[h][0] {
+                v[h][1] = v[h][0];
+            }
+            v[h][0] = cur_width;
+        // New left value
+        } else if cur_width < v[h][0] {
+            if v[h][0] > v[h][1] {
+                v[h][1] = v[h][0];
+            }
+            v[h][0] = cur_width;
+        // New right value
+        } else if cur_width > v[h][1] {
+            v[h][1] = cur_width;
+        // Ignore middle value
+        } else if v[h][0] < cur_width && cur_width < v[h][1] {
+            continue;
+        // Ignore matching values
+        } else if cur_width == v[h][0] || cur_width == v[h][1] {
+            continue;
+        } else {
+            println!("row: {:?}", v[h]);
+            println!("cur width: {cur_width}");
+            panic!();
+        }
+        println!();
+        println!("cur width: {cur_width}");
+        println!("v[{}]: {:?}", h, v[h]);
+    }
+}
+
+pub fn day_18_1_new(text: &str) -> usize {
     // Find the excavation volume given the digging instructions
-    // TODO: Refactor to avoid iterating over the input twice
     let (dimensions, start_coord) = find_excavation_dimensions(text);
     let (width, height) = dimensions;
 
-    let mut matrix = build_matrix(text, width, height, start_coord);
-    flood_fill_edge_0s(&mut matrix);
+    let mut v: Vec<[usize; 2]> = vec![[usize::MAX; 2]; height];
+    let mut cur_width = start_coord.0;
+    let mut cur_height = start_coord.1;
+    v[cur_height][0] = cur_width;
+
+    for line in text.lines() {
+        let line = line.split(' ');
+        let mut direction = "A";
+        let mut number = 0;
+        for (i, item) in line.enumerate() {
+            if i == 0 {
+                direction = item;
+            } else if i == 1 {
+                number = item.parse::<usize>().unwrap();
+            }
+        }
+
+        println!("xxxxxxxxxxxxxxxxxxxxxxxx");
+        if direction == "R" {
+            cur_width += number;
+        } else if direction == "L" {
+            cur_width -= number;
+        } else if direction == "U" {
+            let mut new_height = cur_height - number;
+            change_height(&mut v, new_height, cur_height, cur_width);
+            cur_height = new_height;
+        } else if direction == "D" {
+            let new_height = cur_height + number;
+            change_height(&mut v, cur_height, new_height, cur_width);
+            cur_height = new_height;
+        } else {
+            panic!("invalid direction: {}", direction);
+        }
+
+        if direction == "D" || direction == "U" {
+            continue;
+        }
+        // First value
+        if v[cur_height][0] == usize::MAX {
+            v[cur_height][0] = cur_width;
+        // Second, unique value
+        } else if v[cur_height][1] == usize::MAX {//&& v[cur_height][0] != cur_width {
+            if v[cur_height][0] > cur_width {
+                v[cur_height][1] = v[cur_height][0];
+            }
+            v[cur_height][0] = cur_width;
+        // New left
+        } else if cur_width < v[cur_height][0] {
+            if v[cur_height][0] > v[cur_height][1] {
+                v[cur_height][1] = v[cur_height][0];
+            }
+            v[cur_height][0] = cur_width;
+        // New right
+        } else if cur_width > v[cur_height][1] {
+            v[cur_height][1] = cur_width;
+        // Ignore middle value
+        } else if v[cur_height][0] < cur_width && cur_width < v[cur_height][1] {
+            continue;
+        } else {
+            println!("panic");
+            println!("cur width: {cur_width}");
+            println!("v[{}]: {:?}", cur_height, v[cur_height]);
+            panic!();
+        }
+        println!();
+        println!("cur width: {cur_width}");
+        println!("v[{}]: {:?}", cur_height, v[cur_height]);
+    }
 
     let mut volume = 0;
-    for row in 0..matrix.len() {
-        for col in 0..matrix[0].len() {
-            if matrix[row][col] != 2 {
-                volume += 1;
-            }
+    for i in 0..v.len() {
+        // + 1 account for index 0
+        println!("i: {i}, v[{i}]: {:?}", v[i]);
+        if v[i][1] > v[i][0] {
+            volume += v[i][1] - v[i][0] + 1;
+        } else {
+            volume += v[i][0] - v[i][1] + 1;
         }
     }
     return volume;
@@ -242,6 +346,7 @@ fn flood_fill_recurse(matrix: &mut Vec<Vec<u8>>, row: usize, col: usize) {
     }
 }
 
+/*
 fn build_matrix(
     text: &str,
     width: usize,
@@ -291,6 +396,7 @@ fn build_matrix(
     }
     return matrix;
 }
+*/
 
 fn find_excavation_dimensions(text: &str) -> ((usize, usize), (usize, usize)) {
     // Return (width, height) and (start width, start height)

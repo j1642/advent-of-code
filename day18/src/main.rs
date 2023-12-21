@@ -1,4 +1,4 @@
-use day18::day_18_1; //, day_18_2};
+use day18::{day_18_1_new, day_18_2};
 use std::fs;
 
 fn main() {
@@ -18,17 +18,17 @@ U 3 (#a77fa3)
 L 2 (#015232)
 U 2 (#7a21e3)";
 
-    assert_eq!(day_18_1(example), 62);
+    assert_eq!(day_18_1_new(example), 62);
 
-    let ans_18_1 = day_18_1(&text);
-    println!("day 18_1 = {}", ans_18_1);
+    let ans_18_1 = day_18_1_new(&text);
+    //println!("day 18_1 = {}", ans_18_1);
     assert_eq!(ans_18_1, 40761);
 
-    /*
     // Part 2
     //env::set_var("RUST_BACKTRACE", "1");
-    //assert_eq!(day_18_2(example), );
+    //assert_eq!(day_18_2(example), 952408144115);
 
+    /*
     let ans_18_2 = day_18_2(&text);
     println!("day 18_2 = {}", ans_18_2);
     //assert_eq!(ans_18_2, 7154);
