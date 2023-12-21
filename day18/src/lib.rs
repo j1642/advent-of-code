@@ -1,10 +1,8 @@
-pub fn day_18_1(text: &str) -> u32 {
+pub fn day_18_1_new(text: &str) -> u32 {
     // Find the excavation volume given the digging instructions
     // TODO: Refactor to avoid iterating over the input twice
     let (dimensions, start_coord) = find_excavation_dimensions(text);
     let (width, height) = dimensions;
-    //println!("dimensions: {:?}", dimensions);
-    //println!("start_coord: {:?}", start_coord);
 
     let mut matrix = build_matrix(text, width, height, start_coord);
     flood_fill_edge_0s(&mut matrix);
@@ -20,7 +18,184 @@ pub fn day_18_1(text: &str) -> u32 {
     return volume;
 }
 
-fn flood_fill_edge_0s(matrix: &mut Vec<Vec<u32>>) {
+pub fn day_18_2(text: &str) -> u64 {
+    // Find the excavation volume using the hexadecimal dig instructions
+    let (dimensions, start_coord) = find_excavation_dimensions_hex(text);
+    let (_width, height) = dimensions;
+    //println!("dimensions: {:?}", dimensions);
+    //println!("start_coord: {:?}", start_coord);
+
+    let matrix = build_vec_2(text, height, start_coord);
+
+    let mut volume = 0;
+    for i in 0..matrix.len() {
+        if matrix[i][1] > matrix[i][0] {
+            volume += matrix[i][1] - matrix[i][0];
+        } else {
+            volume += matrix[i][0] - matrix[i][1];
+        }
+    }
+    return volume as u64;
+}
+
+fn build_vec_2(text: &str, height: usize, start: (usize, usize)) -> Vec<[usize; 2]> {
+    // Find start and end cols in each row, add number of coordinates
+    let mut v = vec![[0; 2]; height];
+
+    let mut cur_width = start.0;
+    let mut cur_height = start.1;
+    v[cur_height][0] = cur_width;
+
+    for line in text.lines() {
+        let line = line.split(' ');
+
+        let matches: &[_] = &['#', '(', ')'];
+        let hex = line.last().unwrap().trim_matches(matches);
+        let last_char = hex.chars().last().unwrap();
+        let direction = match last_char {
+            '0' => "R",
+            '1' => "D",
+            '2' => "L",
+            '3' => "U",
+            _ => panic!("invalid final digit: {}", last_char),
+        };
+        // Integer divide by 16 to remove last digit
+        let hex = usize::from_str_radix(hex, 16).unwrap() / 16;
+
+        if direction == "R" {
+            cur_width += hex;
+        } else if direction == "L" {
+            cur_width -= hex;
+        } else if direction == "U" {
+            //cur_height -= hex;
+            let new_height = cur_height - hex;
+            for h in new_height..cur_height {
+                if v[h][0] == 0 {
+                    v[h][0] = cur_width;
+                } else if cur_width < v[h][0] {
+                    if v[h][0] > v[h][1] {
+                        v[h][1] = v[h][0];
+                    }
+                    v[h][0] = cur_width;
+                } else if cur_width > v[cur_width][1] {
+                    v[h][1] = cur_width;
+                } else if cur_width == v[h][0] || cur_width == v[h][1] {
+                    continue;
+                } else {
+                    println!("row: {:?}", v[h]);
+                    println!("cur width: {cur_width}");
+                    panic!();
+                }
+            }
+            cur_height = new_height;
+        } else if direction == "D" {
+            //cur_height += hex;
+            let new_height = cur_height + hex;
+            for h in cur_height..new_height {
+                if v[h][0] == 0 {
+                    v[h][0] = cur_width;
+                } else if cur_width < v[h][0] {
+                    if v[h][0] > v[h][1] {
+                        v[h][1] = v[h][0];
+                    }
+                    v[h][0] = cur_width;
+                } else if cur_width > v[cur_width][1] {
+                    v[h][1] = cur_width;
+                } else if cur_width == v[h][0] || cur_width == v[h][1] {
+                    continue;
+                } else {
+                    println!("row: {:?}", v[h]);
+                    println!("cur width: {cur_width}");
+                    panic!();
+                }
+            }
+            cur_height = new_height;
+        } else {
+            panic!("invalid direction: {}", direction);
+        }
+
+        if direction == "D" || direction == "U" {
+            continue;
+        }
+        if v[cur_height][0] == 0 {
+            v[cur_height][0] = cur_width;
+        } else if cur_width < v[cur_height][0] {
+            if v[cur_height][0] > v[cur_height][1] {
+                v[cur_height][1] = v[cur_height][0];
+            }
+            v[cur_height][0] = cur_width;
+        } else if cur_width > v[cur_width][1] {
+            v[cur_height][1] = cur_width;
+        } else {
+            panic!();
+        }
+    }
+
+    return v;
+}
+
+fn find_excavation_dimensions_hex(text: &str) -> ((usize, usize), (usize, usize)) {
+    // Return (width, height) and (start width, start height)
+    let mut max_width = 0;
+    let mut min_width = 0;
+    let mut max_height = 0;
+    let mut min_height = 0;
+
+    let mut cur_width = 0;
+    let mut cur_height = 0;
+
+    for line in text.lines() {
+        let line = line.split(' ');
+
+        let matches: &[_] = &['#', '(', ')'];
+        let hex = line.last().unwrap().trim_matches(matches);
+        let last_char = hex.chars().last().unwrap();
+        let direction = match last_char {
+            '0' => "R",
+            '1' => "D",
+            '2' => "L",
+            '3' => "U",
+            _ => panic!("invalid final digit: {}", last_char),
+        };
+        // Integer divide by 16 to remove last digit
+        let hex = usize::from_str_radix(hex, 16).unwrap() / 16;
+
+        if direction == "R" {
+            cur_width += hex;
+        } else if direction == "L" {
+            cur_width -= hex;
+        } else if direction == "U" {
+            cur_height -= hex;
+        } else if direction == "D" {
+            cur_height += hex;
+        } else {
+            panic!("invalid direction: {}", direction);
+        }
+
+        if cur_width > max_width {
+            max_width = cur_width;
+        }
+        if cur_width < min_width {
+            min_width = cur_width;
+        }
+        if cur_height > max_height {
+            max_height = cur_height;
+        }
+        if cur_height < min_height {
+            min_height = cur_height;
+        }
+    }
+    // +1 includes the location where width=0 and height=0
+    return (
+        (
+            (max_width - min_width) as usize + 1,
+            (max_height - min_height) as usize + 1,
+        ),
+        ((0 - min_width) as usize, (0 - min_height) as usize),
+    );
+}
+
+fn flood_fill_edge_0s(matrix: &mut Vec<Vec<u8>>) {
     // Replace any 0 outside the excavation with a 2. The
     // excavation edge is marked with 1s
     for col in 0..matrix[0].len() {
@@ -41,7 +216,7 @@ fn flood_fill_edge_0s(matrix: &mut Vec<Vec<u32>>) {
     }
 }
 
-fn flood_fill_recurse(matrix: &mut Vec<Vec<u32>>, row: usize, col: usize) {
+fn flood_fill_recurse(matrix: &mut Vec<Vec<u8>>, row: usize, col: usize) {
     // Orthogonal recursion replaces any 0s outisde the excavation with 2s
     if matrix[row][col] != 0 {
         return;
@@ -72,8 +247,8 @@ fn build_matrix(
     width: usize,
     height: usize,
     start_coord: (usize, usize),
-) -> Vec<Vec<u32>> {
-    let mut matrix: Vec<Vec<u32>> = vec![vec![0; width]; height];
+) -> Vec<Vec<u8>> {
+    let mut matrix: Vec<Vec<u8>> = vec![vec![0; width]; height];
     let mut cur_width = start_coord.0;
     let mut cur_height = start_coord.1;
 
