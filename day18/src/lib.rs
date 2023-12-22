@@ -1,3 +1,57 @@
+pub fn pt1(text: &str) -> u64 {
+    let mut points: Vec<(f64, f64)> = vec![];
+    let mut x = 0.0;
+    let mut y = 0.0;
+
+    let mut perimeter = 0.0;
+    //points.push((0.0, 0.0));
+
+    for line in text.lines() {
+        let line = line.split(' ');
+        let mut direction = "A";
+        let mut number = 0.0;
+        for (i, item) in line.enumerate() {
+            if i == 0 {
+                direction = item;
+            } else if i == 1 {
+                number = item.parse::<f64>().unwrap();
+                perimeter += number
+            }
+        }
+
+        if direction == "U" {
+            // Switchind plus/minus doesn't change answer
+            y -= number;
+        } else if direction == "D" {
+            y += number;
+        } else if direction == "R" {
+            x += number;
+        } else if direction == "L" {
+            x -= number;
+        } else {
+            panic!();
+        }
+        points.push((x, y));
+    }
+    //points.pop();
+    // Shoelace formula
+    let mut interior_area: f64 = 0.0;
+    for i in 0..points.len() - 1 {
+        // Trapezoid formula
+        //interior_area += (points[i].1 + points[i + 1].1) * (points[i].0 - points[i + 1].0);
+        // Triangle formula
+        interior_area += (points[i].0 * points[i+1].1) - (points[i+1].0 * points[i].1);
+    }
+    println!("{}", interior_area);
+    println!("{}", interior_area / 2.0);
+    println!("{}", perimeter);
+    println!("{}", perimeter / 2.0);
+
+    // Pick's theorem
+    //return (interior_area.abs() / 2.0 + (perimeter + 1.0) / 2.0 + 1.0) as u64;
+    return interior_area.abs() as u64 / 2 + (perimeter as u64 + 1) / 2 + 1;
+}
+
 fn change_height(v: &mut Vec<[usize; 2]>, low_height: usize, high_height: usize, cur_width: usize) {
     for h in low_height..=high_height {
         // First value found
@@ -63,7 +117,7 @@ pub fn day_18_1_new(text: &str) -> usize {
         } else if direction == "L" {
             cur_width -= number;
         } else if direction == "U" {
-            let mut new_height = cur_height - number;
+            let new_height = cur_height - number;
             change_height(&mut v, new_height, cur_height, cur_width);
             cur_height = new_height;
         } else if direction == "D" {
