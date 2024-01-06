@@ -1,4 +1,4 @@
-use day19::day19_1; //, day19_2};
+use day19::{day19_1, day19_2};
 use std::fs;
 
 fn main() {
@@ -28,11 +28,9 @@ hdj{m>838:A,pv}
 
     // Part 2
     //env::set_var("RUST_BACKTRACE", "1");
-    //assert_eq!(day_19_2(example), 952408144115);
+    assert_eq!(day19_2(example), 167409079868000);
 
-    /*
-    let ans_19_2 = day_19_2(&text);
+    let ans_19_2 = day19_2(&text);
     println!("day 19_2 = {}", ans_19_2);
-    //assert_eq!(ans_19_2, 7154);
-    */
+    assert_eq!(ans_19_2, 134906204068564);
 }

@@ -7,12 +7,201 @@ struct Part {
     a: u32,
     s: u32,
 }
+
+#[derive(Debug)]
+#[derive(Clone)]
+struct PartRange<'a> {
+    key: &'a str,
+    x_min: u32,
+    x_max: u32,
+    m_min: u32,
+    m_max: u32,
+    a_min: u32,
+    a_max: u32,
+    s_min: u32,
+    s_max: u32,
+}
+
 #[derive(Debug)]
 struct Check<'a> {
     letter: char,
     compare: char,
     num: u32,
     result: &'a str,
+}
+
+pub fn day19_2(text: &str) -> u64 {
+    // Return the amount of possible accepted combos for all X,
+    // M, A, and S values are in [1, 4000], inclusive
+    let mut total = 0;
+    let (rules, _) = text.split_once("\n\n").unwrap();
+    let workflows = parse_workflows(rules);
+
+    let mut stack: Vec<PartRange> = vec![
+        // Inclusive mins and maxes
+        PartRange {
+            key: "in",
+            x_min: 1,
+            x_max: 4000,
+            m_min: 1,
+            m_max: 4000,
+            a_min: 1,
+            a_max: 4000,
+            s_min: 1,
+            s_max: 4000,
+        }
+    ];
+
+    let mut min_or_max_fn: fn(_,_) -> _;
+    while stack.len() > 0 {
+        let mut orig_parts = stack.pop().unwrap();
+
+        if orig_parts.key == "R" {
+            continue;
+        } else if orig_parts.key == "A" {
+            // + 1 because upper bounds are inclusive
+            total += (orig_parts.x_max - orig_parts.x_min + 1) as u64
+                * (orig_parts.m_max - orig_parts.m_min + 1) as u64
+                * (orig_parts.a_max - orig_parts.a_min + 1) as u64
+                * (orig_parts.s_max - orig_parts.s_min + 1) as u64;
+            continue;
+        }
+
+        for check in workflows[orig_parts.key].iter() {
+            let mut parts = orig_parts.clone();
+            if check.compare == '<' {
+                min_or_max_fn = std::cmp::min::<u32>;
+            } else if check.compare == '>' {
+                min_or_max_fn = std::cmp::max::<u32>;
+            } else if check.compare == 'z' {
+                parts.key = check.result;
+                stack.push(parts);
+                break;
+            } else {
+                panic!();
+            }
+
+            let min;
+            let max;
+            match check.letter {
+                'x' => {
+                    min = parts.x_min;
+                    max = parts.x_max;
+                },
+                'm' => {
+                    min = parts.m_min;
+                    max = parts.m_max;
+                },
+                'a' => {
+                    min = parts.a_min;
+                    max = parts.a_max;
+                },
+                's' => {
+                    min = parts.s_min;
+                    max = parts.s_max;
+                },
+                _ => {panic!()},
+            }
+
+            if min_or_max_fn(check.num, min) != min
+            && min_or_max_fn(check.num, max) != max {
+                // Full range is rejected
+                continue;
+            } else if min_or_max_fn(check.num, min) == min {
+                if min_or_max_fn(check.num, max) == max {
+                    // Full range is accepted
+                    parts.key = check.result;
+                    stack.push(parts);
+                    break;
+                }
+                // Min accepted, max rejected
+                match check.letter {
+                    'x' => {
+                        // modified orig_parts used in next checks
+                        if check.compare == '<' {
+                            parts.x_max = check.num - 1;
+                            orig_parts.x_min = check.num;
+                        } else {
+                            panic!();
+                        }
+                    },
+                    'm' => {
+                        if check.compare == '<' {
+                            parts.m_max = check.num - 1;
+                            orig_parts.m_min = check.num;
+                        } else {
+                            panic!();
+                        }
+                    },
+                    'a' => {
+                        if check.compare == '<' {
+                            parts.a_max = check.num - 1;
+                            orig_parts.a_min = check.num;
+                        } else {
+                            panic!();
+                        }
+                    },
+                    's' => {
+                        if check.compare == '<' {
+                            parts.s_max = check.num - 1;
+                            orig_parts.s_min = check.num;
+                        } else {
+                            panic!();
+                        }
+                    },
+                    _ => {panic!()},
+                }
+                parts.key = check.result;
+                stack.push(parts);
+                // modified orig_parts is used in the next iteration
+            } else {
+                // Max is in the range, min rejected
+                if min_or_max_fn(check.num, max) != max {
+                    panic!();
+                }
+                match check.letter {
+                    'x' => {
+                        if check.compare == '>' {
+                            parts.x_min = check.num + 1;
+                            orig_parts.x_max = check.num;
+                        } else {
+                            panic!();
+                        }
+                    },
+                    'm' => {
+                        if check.compare == '>' {
+                            parts.m_min = check.num + 1;
+                            orig_parts.m_max = check.num;
+                        } else {
+                            panic!();
+                        }
+                    },
+                    'a' => {
+                        if check.compare == '>' {
+                            parts.a_min = check.num + 1;
+                            orig_parts.a_max = check.num;
+                        } else {
+                            panic!();
+                        }
+                    },
+                    's' => {
+                        if check.compare == '>' {
+                            parts.s_min = check.num + 1;
+                            orig_parts.s_max = check.num;
+                        } else {
+                            panic!();
+                        }
+                    },
+                    _ => {panic!()},
+                }
+                parts.key = check.result;
+                stack.push(parts);
+                // modified orig_parts is used in the next iteration
+            }
+        }
+    }
+
+    return total;
 }
 
 pub fn day19_1(text: &str) -> u32 {
@@ -25,7 +214,8 @@ pub fn day19_1(text: &str) -> u32 {
         let mut is_accepted = false;
         let mut is_rejected = false;
         let mut key = "in";
-        // Refactor. Not sure how
+        // Refactor. Not sure how. Maybe use min()/max()
+        //let mut min_or_max_fn: fn(_,_) -> _;
         // Can't find a std lib like Python's operator lib
         while !is_accepted && !is_rejected {
             for check in workflows[key].iter() {
