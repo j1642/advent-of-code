@@ -8,8 +8,7 @@ struct Part {
     s: u32,
 }
 
-#[derive(Debug)]
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 struct PartRange<'a> {
     key: &'a str,
     x_min: u32,
@@ -49,10 +48,10 @@ pub fn day19_2(text: &str) -> u64 {
             a_max: 4000,
             s_min: 1,
             s_max: 4000,
-        }
+        },
     ];
 
-    let mut min_or_max_fn: fn(_,_) -> _;
+    let mut min_or_max_fn: fn(_, _) -> _;
     while stack.len() > 0 {
         let mut orig_parts = stack.pop().unwrap();
 
@@ -87,24 +86,25 @@ pub fn day19_2(text: &str) -> u64 {
                 'x' => {
                     min = parts.x_min;
                     max = parts.x_max;
-                },
+                }
                 'm' => {
                     min = parts.m_min;
                     max = parts.m_max;
-                },
+                }
                 'a' => {
                     min = parts.a_min;
                     max = parts.a_max;
-                },
+                }
                 's' => {
                     min = parts.s_min;
                     max = parts.s_max;
-                },
-                _ => {panic!()},
+                }
+                _ => {
+                    panic!()
+                }
             }
 
-            if min_or_max_fn(check.num, min) != min
-            && min_or_max_fn(check.num, max) != max {
+            if min_or_max_fn(check.num, min) != min && min_or_max_fn(check.num, max) != max {
                 // Full range is rejected
                 continue;
             } else if min_or_max_fn(check.num, min) == min {
@@ -124,7 +124,7 @@ pub fn day19_2(text: &str) -> u64 {
                         } else {
                             panic!();
                         }
-                    },
+                    }
                     'm' => {
                         if check.compare == '<' {
                             parts.m_max = check.num - 1;
@@ -132,7 +132,7 @@ pub fn day19_2(text: &str) -> u64 {
                         } else {
                             panic!();
                         }
-                    },
+                    }
                     'a' => {
                         if check.compare == '<' {
                             parts.a_max = check.num - 1;
@@ -140,7 +140,7 @@ pub fn day19_2(text: &str) -> u64 {
                         } else {
                             panic!();
                         }
-                    },
+                    }
                     's' => {
                         if check.compare == '<' {
                             parts.s_max = check.num - 1;
@@ -148,8 +148,10 @@ pub fn day19_2(text: &str) -> u64 {
                         } else {
                             panic!();
                         }
-                    },
-                    _ => {panic!()},
+                    }
+                    _ => {
+                        panic!()
+                    }
                 }
                 parts.key = check.result;
                 stack.push(parts);
@@ -167,7 +169,7 @@ pub fn day19_2(text: &str) -> u64 {
                         } else {
                             panic!();
                         }
-                    },
+                    }
                     'm' => {
                         if check.compare == '>' {
                             parts.m_min = check.num + 1;
@@ -175,7 +177,7 @@ pub fn day19_2(text: &str) -> u64 {
                         } else {
                             panic!();
                         }
-                    },
+                    }
                     'a' => {
                         if check.compare == '>' {
                             parts.a_min = check.num + 1;
@@ -183,7 +185,7 @@ pub fn day19_2(text: &str) -> u64 {
                         } else {
                             panic!();
                         }
-                    },
+                    }
                     's' => {
                         if check.compare == '>' {
                             parts.s_min = check.num + 1;
@@ -191,8 +193,10 @@ pub fn day19_2(text: &str) -> u64 {
                         } else {
                             panic!();
                         }
-                    },
-                    _ => {panic!()},
+                    }
+                    _ => {
+                        panic!()
+                    }
                 }
                 parts.key = check.result;
                 stack.push(parts);
@@ -215,11 +219,10 @@ pub fn day19_1(text: &str) -> u32 {
         let mut is_rejected = false;
         let mut key = "in";
 
-        let mut min_or_max_fn: fn(_,_) -> _;
+        let mut min_or_max_fn: fn(_, _) -> _;
 
         while !is_accepted && !is_rejected {
             for check in workflows[key].iter() {
-
                 if check.compare == 'z' {
                     key = check.result;
                     continue;
