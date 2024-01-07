@@ -214,75 +214,51 @@ pub fn day19_1(text: &str) -> u32 {
         let mut is_accepted = false;
         let mut is_rejected = false;
         let mut key = "in";
-        // Refactor. Not sure how. Maybe use min()/max()
-        //let mut min_or_max_fn: fn(_,_) -> _;
-        // Can't find a std lib like Python's operator lib
+
+        let mut min_or_max_fn: fn(_,_) -> _;
+
         while !is_accepted && !is_rejected {
             for check in workflows[key].iter() {
-                if check.compare == '<' {
-                    match check.letter {
-                        'x' => {
-                            if part.x < check.num {
-                                key = check.result;
-                                break;
-                            }
-                        }
-                        'm' => {
-                            if part.m < check.num {
-                                key = check.result;
-                                break;
-                            }
-                        }
-                        'a' => {
-                            if part.a < check.num {
-                                key = check.result;
-                                break;
-                            }
-                        }
-                        's' => {
-                            if part.s < check.num {
-                                key = check.result;
-                                break;
-                            }
-                        }
-                        _ => {
-                            panic!();
-                        }
-                    }
-                } else if check.compare == '>' {
-                    match check.letter {
-                        'x' => {
-                            if part.x > check.num {
-                                key = check.result;
-                                break;
-                            }
-                        }
-                        'm' => {
-                            if part.m > check.num {
-                                key = check.result;
-                                break;
-                            }
-                        }
-                        'a' => {
-                            if part.a > check.num {
-                                key = check.result;
-                                break;
-                            }
-                        }
-                        's' => {
-                            if part.s > check.num {
-                                key = check.result;
-                                break;
-                            }
-                        }
-                        _ => {
-                            panic!();
-                        }
-                    }
-                } else if check.compare == 'z' {
+
+                if check.compare == 'z' {
                     key = check.result;
+                    continue;
+                } else if check.compare == '<' {
+                    min_or_max_fn = std::cmp::min::<u32>;
+                } else if check.compare == '>' {
+                    min_or_max_fn = std::cmp::max::<u32>;
                 } else {
                     panic!();
+                }
+
+                match check.letter {
+                    'x' => {
+                        if min_or_max_fn(part.x, check.num) == part.x {
+                            key = check.result;
+                            break;
+                        }
+                    }
+                    'm' => {
+                        if min_or_max_fn(part.m, check.num) == part.m {
+                            key = check.result;
+                            break;
+                        }
+                    }
+                    'a' => {
+                        if min_or_max_fn(part.a, check.num) == part.a {
+                            key = check.result;
+                            break;
+                        }
+                    }
+                    's' => {
+                        if min_or_max_fn(part.s, check.num) == part.s {
+                            key = check.result;
+                            break;
+                        }
+                    }
+                    _ => {
+                        panic!();
+                    }
                 }
             }
             if key == "R" {
