@@ -115,39 +115,25 @@ pub fn day19_2(text: &str) -> u64 {
                     break;
                 }
                 // Min accepted, max rejected
+                if check.compare != '<' {
+                    panic!();
+                }
                 match check.letter {
                     'x' => {
-                        // modified orig_parts used in next checks
-                        if check.compare == '<' {
-                            parts.x_max = check.num - 1;
-                            orig_parts.x_min = check.num;
-                        } else {
-                            panic!();
-                        }
+                        parts.x_max = check.num - 1;
+                        orig_parts.x_min = check.num;
                     }
                     'm' => {
-                        if check.compare == '<' {
-                            parts.m_max = check.num - 1;
-                            orig_parts.m_min = check.num;
-                        } else {
-                            panic!();
-                        }
+                        parts.m_max = check.num - 1;
+                        orig_parts.m_min = check.num;
                     }
                     'a' => {
-                        if check.compare == '<' {
-                            parts.a_max = check.num - 1;
-                            orig_parts.a_min = check.num;
-                        } else {
-                            panic!();
-                        }
+                        parts.a_max = check.num - 1;
+                        orig_parts.a_min = check.num;
                     }
                     's' => {
-                        if check.compare == '<' {
-                            parts.s_max = check.num - 1;
-                            orig_parts.s_min = check.num;
-                        } else {
-                            panic!();
-                        }
+                        parts.s_max = check.num - 1;
+                        orig_parts.s_min = check.num;
                     }
                     _ => {
                         panic!()
@@ -161,38 +147,25 @@ pub fn day19_2(text: &str) -> u64 {
                 if min_or_max_fn(check.num, max) != max {
                     panic!();
                 }
+                if check.compare != '>' {
+                    panic!();
+                }
                 match check.letter {
                     'x' => {
-                        if check.compare == '>' {
-                            parts.x_min = check.num + 1;
-                            orig_parts.x_max = check.num;
-                        } else {
-                            panic!();
-                        }
+                        parts.x_min = check.num + 1;
+                        orig_parts.x_max = check.num;
                     }
                     'm' => {
-                        if check.compare == '>' {
-                            parts.m_min = check.num + 1;
-                            orig_parts.m_max = check.num;
-                        } else {
-                            panic!();
-                        }
+                        parts.m_min = check.num + 1;
+                        orig_parts.m_max = check.num;
                     }
                     'a' => {
-                        if check.compare == '>' {
-                            parts.a_min = check.num + 1;
-                            orig_parts.a_max = check.num;
-                        } else {
-                            panic!();
-                        }
+                        parts.a_min = check.num + 1;
+                        orig_parts.a_max = check.num;
                     }
                     's' => {
-                        if check.compare == '>' {
-                            parts.s_min = check.num + 1;
-                            orig_parts.s_max = check.num;
-                        } else {
-                            panic!();
-                        }
+                        parts.s_min = check.num + 1;
+                        orig_parts.s_max = check.num;
                     }
                     _ => {
                         panic!()
