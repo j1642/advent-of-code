@@ -93,11 +93,12 @@ fn find_conjunction_srcs(text: &str) -> HashMap<&str, Vec<&str>> {
         src = src.trim_start_matches('%');
         src = src.trim_start_matches('&');
 
-        let dests = dests.split(' ');
+        let dests = dests.split(", ");
         for dest in dests {
             if conj_srcs.contains_key(dest) {
                 conj_srcs.get_mut(dest).map(|srcs| srcs.push(src));
             }
+            println!("dest: {}", dest);
         }
     }
     return conj_srcs;
@@ -105,6 +106,11 @@ fn find_conjunction_srcs(text: &str) -> HashMap<&str, Vec<&str>> {
 
 pub fn day20_1(text: &str) -> u32 {
     let conj_srcs = find_conjunction_srcs(text);
+
+    for key in conj_srcs.keys() {
+        println!("k, v: {}, {:?}", key, conj_srcs[key]);
+    }
+
     let mut modules = build_modules_map(text, conj_srcs);
 
     for key in modules.keys() {
@@ -118,7 +124,9 @@ pub fn day20_1(text: &str) -> u32 {
     let mut high_pulse_count = 0;
 
     for _ in 0..1000 {
+        println!();
         q.push_back(("button", "low", "broadcaster"));
+        println!("new q: {:?}", q);
 
         while q.len() > 0 {
             let transmission = q.pop_front().unwrap();
@@ -135,7 +143,6 @@ pub fn day20_1(text: &str) -> u32 {
                 panic!();
             }
 
-            // TODO: finish pulse receiving and sending
             if !modules.contains_key(dest) {
                 continue;
             }
