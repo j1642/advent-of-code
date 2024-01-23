@@ -16,7 +16,7 @@ fn main() {
 &con -> output";
 
     assert_eq!(day20_1(example1), 32000000);
-    //assert_eq!(day20_1(example2), 11687500);
+    assert_eq!(day20_1(example2), 11687500);
     //let ans_20_1 = day20_1(&text);
     //println!("day 20_1 = {}", ans_20_1);
     //assert_eq!(ans_20_1, 401674);

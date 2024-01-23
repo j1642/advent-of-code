@@ -5,11 +5,6 @@ enum Role {
     FlipFlop,
     Conjunction,
     Broadcast,
-    /*
-    FlipFlop {kind: char, is_turned_on: bool, dests: Vec<&'a str>},
-    Conjunction {kind: char, srcs: Vec<&'a str>, prev_sigs: Vec<char>, dests: Vec<&'a str>},
-    Broadcast {kind: char, dests: Vec<&'a str>},
-    */
 }
 
 #[derive(Debug)]
@@ -21,59 +16,6 @@ struct Module<'a> {
     is_prev_sent_pulse_high: bool,
     is_turned_on: bool,
 }
-
-/*
-impl Module<'_> {
-    fn propogate_signal(&self, dest: Module, pulse_type: &str, src: Module) {
-        match self.role {
-            Role::Broadcast => {
-                for dest in self.dests {
-                }
-            },
-            Role::Conjunction => {
-                    // update connected_inputs with the new pulse type
-                if self.inputs.contains("low") {
-                    // emit high
-                } else {
-                    // emit low
-                }
-            },
-            Role::FlipFlop => {
-                if pulse == "low" {
-                    self.is_turned_on ^= true;
-                }
-
-                if self.is_turned_on {
-                    // emit high after turning on
-                } else {
-                    // emit low after turning off
-                }
-            },
-            _ => {panic!();},
-        }
-    }
-}
-        */
-
-/*
-impl FlipFlop {
-    fn receive(&self, pulse: &str) {
-    fn send(&self, pulse: &str) {
-    }
-}
-impl Conjunction {
-    fn receive(&self, pulse: &str, src: u32) {
-    }
-}
-impl Broadcast {
-    fn receive(&self, pulse: &str) {
-        // emit pulse to all destinations
-    }
-}
-trait Receive {
-    fn receive(&self, pulse: &str, src: &str, q: Vec<Module>);
-}
-*/
 
 fn build_modules_map<'a>(
     text: &'a str,
@@ -165,21 +107,25 @@ pub fn day20_1(text: &str) -> u32 {
     let conj_srcs = find_conjunction_srcs(text);
     let mut modules = build_modules_map(text, conj_srcs);
 
-    // DEST receives PULSE-TYPE from SRC
+    for key in modules.keys() {
+        println!("{:?}", modules[key]);
+    }
+
+    // SRC sends PULSE-TYPE to DEST
     let mut q: VecDeque<(&str, &str, &str)> = VecDeque::new();
 
     let mut low_pulse_count = 0;
     let mut high_pulse_count = 0;
 
     for _ in 0..1000 {
-        q.push_back(("broadcaster", "low", "broadcaster"));
+        q.push_back(("button", "low", "broadcaster"));
 
         while q.len() > 0 {
             let transmission = q.pop_front().unwrap();
             println!("{:?}", transmission);
-            let dest = transmission.0;
+            let src = transmission.0;
             let pulse_type = transmission.1;
-            let src = transmission.2;
+            let dest = transmission.2;
 
             if pulse_type == "low" {
                 low_pulse_count += 1;
@@ -190,6 +136,9 @@ pub fn day20_1(text: &str) -> u32 {
             }
 
             // TODO: finish pulse receiving and sending
+            if !modules.contains_key(dest) {
+                continue;
+            }
             match modules[dest].role {
                 Role::Broadcast => {
                     if pulse_type == "high" {
@@ -205,7 +154,7 @@ pub fn day20_1(text: &str) -> u32 {
                     }
 
                     for new_dest in &modules[dest].dests {
-                        q.push_back((new_dest, pulse_type, dest))
+                        q.push_back((dest, pulse_type, new_dest))
                     }
                 }
                 Role::Conjunction => {
@@ -218,7 +167,7 @@ pub fn day20_1(text: &str) -> u32 {
                     }
 
                     for new_dest in &modules[dest].dests {
-                        q.push_back((new_dest, pulse_to_emit, dest))
+                        q.push_back((dest, pulse_to_emit, new_dest))
                     }
                 }
                 Role::FlipFlop => {
@@ -230,7 +179,7 @@ pub fn day20_1(text: &str) -> u32 {
                                 .map(|v| v.is_prev_sent_pulse_high = true);
                             // emit high after turning on
                             for new_dest in &modules[dest].dests {
-                                q.push_back((new_dest, "high", modules[dest].name));
+                                q.push_back((dest, "high", new_dest))
                             }
                         } else {
                             // emit low after turning off
@@ -238,7 +187,7 @@ pub fn day20_1(text: &str) -> u32 {
                                 .get_mut(dest)
                                 .map(|v| v.is_prev_sent_pulse_high = false);
                             for new_dest in &modules[dest].dests {
-                                q.push_back((new_dest, "low", modules[dest].name));
+                                q.push_back((dest, "low", new_dest))
                             }
                         }
                     }
