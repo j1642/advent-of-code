@@ -2,7 +2,7 @@ use day20::day20_1; //, day20_2};
 use std::fs;
 
 fn main() {
-    let _text = fs::read_to_string("day20.txt").expect("Should have read the file");
+    let text = fs::read_to_string("day20.txt").expect("Should have read the file");
     let example1 = "broadcaster -> a, b, c
 %a -> b
 %b -> c
@@ -17,9 +17,9 @@ fn main() {
 
     assert_eq!(day20_1(example1), 32000000);
     assert_eq!(day20_1(example2), 11687500);
-    //let ans_20_1 = day20_1(&text);
-    //println!("day 20_1 = {}", ans_20_1);
-    //assert_eq!(ans_20_1, 401674);
+    let ans_20_1 = day20_1(&text);
+    println!("day 20_1 = {}", ans_20_1);
+    assert_eq!(ans_20_1, 812_609_846);
 
     /*
     // Part 2

@@ -9,7 +9,6 @@ enum Role {
 
 #[derive(Debug)]
 struct Module<'a> {
-    name: &'a str,
     role: Role,
     srcs: Vec<&'a str>,
     dests: Vec<&'a str>,
@@ -32,7 +31,6 @@ fn build_modules_map<'a>(
             modules.insert(
                 src,
                 Module {
-                    name: src,
                     role: Role::Broadcast,
                     srcs: vec![],
                     dests: dests,
@@ -48,7 +46,6 @@ fn build_modules_map<'a>(
                 modules.insert(
                     src,
                     Module {
-                        name: src,
                         role: Role::Conjunction,
                         srcs: conj_srcs.get(src).unwrap().clone(),
                         dests: dests,
@@ -61,7 +58,6 @@ fn build_modules_map<'a>(
                 modules.insert(
                     src,
                     Module {
-                        name: src,
                         role: Role::FlipFlop,
                         srcs: vec![],
                         dests: dests,
@@ -98,7 +94,6 @@ fn find_conjunction_srcs(text: &str) -> HashMap<&str, Vec<&str>> {
             if conj_srcs.contains_key(dest) {
                 conj_srcs.get_mut(dest).map(|srcs| srcs.push(src));
             }
-            println!("dest: {}", dest);
         }
     }
     return conj_srcs;
@@ -106,16 +101,7 @@ fn find_conjunction_srcs(text: &str) -> HashMap<&str, Vec<&str>> {
 
 pub fn day20_1(text: &str) -> u32 {
     let conj_srcs = find_conjunction_srcs(text);
-
-    for key in conj_srcs.keys() {
-        println!("k, v: {}, {:?}", key, conj_srcs[key]);
-    }
-
     let mut modules = build_modules_map(text, conj_srcs);
-
-    for key in modules.keys() {
-        println!("{:?}", modules[key]);
-    }
 
     // SRC sends PULSE-TYPE to DEST
     let mut q: VecDeque<(&str, &str, &str)> = VecDeque::new();
@@ -124,14 +110,10 @@ pub fn day20_1(text: &str) -> u32 {
     let mut high_pulse_count = 0;
 
     for _ in 0..1000 {
-        println!();
         q.push_back(("button", "low", "broadcaster"));
-        println!("new q: {:?}", q);
 
         while q.len() > 0 {
             let transmission = q.pop_front().unwrap();
-            println!("{:?}", transmission);
-            let src = transmission.0;
             let pulse_type = transmission.1;
             let dest = transmission.2;
 
@@ -173,6 +155,18 @@ pub fn day20_1(text: &str) -> u32 {
                         }
                     }
 
+                    if pulse_to_emit == "high" {
+                        modules
+                            .get_mut(dest)
+                            .map(|v| v.is_prev_sent_pulse_high = true);
+                    } else if pulse_to_emit == "low" {
+                        modules
+                            .get_mut(dest)
+                            .map(|v| v.is_prev_sent_pulse_high = false);
+                    } else {
+                        panic!();
+                    }
+
                     for new_dest in &modules[dest].dests {
                         q.push_back((dest, pulse_to_emit, new_dest))
                     }
@@ -199,13 +193,9 @@ pub fn day20_1(text: &str) -> u32 {
                         }
                     }
                 }
-                _ => {
-                    panic!();
-                }
             }
         }
     }
 
-    println!("complete run\n");
     return low_pulse_count * high_pulse_count;
 }
