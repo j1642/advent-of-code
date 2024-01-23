@@ -102,8 +102,6 @@ pub fn day20_1(text: &str) -> u32 {
     // if the button is pressed 1000 times
     let conj_srcs = find_conjunction_srcs(text);
     let mut modules = build_modules_map(text, conj_srcs);
-    // Copying helps avoid E0502, cannot borrow as immutable and mutable
-    let orig_modules = modules.clone();
 
     // In a queue tuple, SRC sends PULSE-TYPE to DEST
     let mut q: VecDeque<(&str, &str, &str)> = VecDeque::new();
@@ -127,7 +125,7 @@ pub fn day20_1(text: &str) -> u32 {
             }
 
             let dest = transmission.2;
-            if !orig_modules.contains_key(dest) {
+            if !modules.contains_key(dest) {
                 continue;
             }
 
@@ -137,6 +135,7 @@ pub fn day20_1(text: &str) -> u32 {
 
     return low_pulse_count * high_pulse_count;
 }
+
 fn propogate<'a>(
     transmission: (&str, &'a str, &'a str),
     q: &mut VecDeque<(&'a str, &'a str, &'a str)>,
@@ -213,14 +212,62 @@ fn propogate<'a>(
     }
 }
 
-pub fn day20_2(_text: &str) -> u32 {
-    /*
+pub fn day20_2(text: &str) -> u64 {
+    // fewest number of button presses required to deliver a single low pulse to rx?
     let conj_srcs = find_conjunction_srcs(text);
     let mut modules = build_modules_map(text, conj_srcs);
 
     let mut q: VecDeque<(&str, &str, &str)> = VecDeque::new();
     let mut button_press_count = 0;
-    return button_press_count;
-    */
-    return 0;
+
+    // conj. hp is only sender to rx
+    // hp receives from &sr, &sn, &rf, &vq
+    // rx can only receive a low pulse when all hp_srcs have sent a high pulse
+    let hp_srcs = &modules["hp"].srcs.clone();
+    let mut hp_srcs_button_counts = [0; 4];
+    let mut saved_button_counts = [0; 4];
+
+    while button_press_count < 1_000_000 {
+        q.push_back(("button", "low", "broadcaster"));
+        button_press_count += 1;
+
+        while q.len() > 0 {
+            let transmission = q.pop_front().unwrap();
+            let pulse_type = transmission.1;
+            let dest = transmission.2;
+
+            let src = transmission.0;
+            if pulse_type == "high" && dest == "hp" {
+                for idx in 0..hp_srcs.len() {
+                    if hp_srcs[idx] == src {
+                        hp_srcs_button_counts[idx] += 1;
+                        break;
+                    }
+                }
+            }
+            if !modules.contains_key(dest) {
+                continue;
+            }
+            propogate(transmission, &mut q, &mut modules);
+        }
+        // check if each of hp_srcs have sent >0 high pulses && respective button_count == 0
+        // if so, store button press count in respsective hp_srcs_button_counts idx
+        for idx in 0..hp_srcs_button_counts.len() {
+            if hp_srcs_button_counts[idx] > 0 && saved_button_counts[idx] == 0 {
+                saved_button_counts[idx] = button_press_count;
+            }
+        }
+
+        let mut found_zero = false;
+        for count in hp_srcs_button_counts {
+            if count == 0 {
+                found_zero = true;
+            }
+        }
+        if !found_zero {
+            break;
+        }
+    }
+
+    return saved_button_counts.iter().product::<u64>();
 }

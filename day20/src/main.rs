@@ -21,13 +21,13 @@ fn main() {
     println!("day 20_1 = {}", ans_20_1);
     assert_eq!(ans_20_1, 812_609_846);
 
-    // fewest number of button presses required to deliver a single low pulse to rx?
     // Part 2
     //env::set_var("RUST_BACKTRACE", "1");
 
-    /*
     let ans_20_2 = day20_2(&text);
     println!("day 20_2 = {}", ans_20_2);
+    println!("           4021 < ans");
+    /*
     assert_eq!(ans_20_2, 134906204068564);
     */
 }
