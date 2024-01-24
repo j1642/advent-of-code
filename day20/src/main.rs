@@ -23,11 +23,7 @@ fn main() {
 
     // Part 2
     //env::set_var("RUST_BACKTRACE", "1");
-
     let ans_20_2 = day20_2(&text);
     println!("day 20_2 = {}", ans_20_2);
-    println!("           4021 < ans");
-    /*
-    assert_eq!(ans_20_2, 134906204068564);
-    */
+    assert_eq!(ans_20_2, 245114020323037);
 }
