@@ -20,8 +20,9 @@ fn main() {
     assert_eq!(day21_1(example1, 2), 4);
     assert_eq!(day21_1(example1, 3), 6);
     assert_eq!(day21_1(example1, 6), 16);
+
     let start = time::Instant::now();
-    let ans_21_1 = day21_1(&text, 64);
+    let ans_21_1 = day21_1(&text, 20);
     let elapsed = start.elapsed();
     println!("elapsed: {}ms", elapsed.as_millis());
     println!("day 21_1 = {}", ans_21_1);
