@@ -16,9 +16,11 @@ pub fn day21_1(text: &str, steps: u32) -> usize {
     let mut q: VecDeque<(Coord, u32)> = VecDeque::new();
     q.push_back((start_coord, steps));
 
+    let mut row;
+    let mut col;
     while let Some((coord, steps_remaining)) = q.pop_front() {
-        let row = coord.row as usize;
-        let col = coord.col as usize;
+        row = coord.row as usize;
+        col = coord.col as usize;
         if matrix[row][col] == 'X' {
             continue;
         }
@@ -55,15 +57,18 @@ pub fn day21_2(text: &str, steps: u32) -> usize {
     let mut q: VecDeque<(Coord, u32)> = VecDeque::new();
     q.push_back((start_coord, steps));
 
+    let mut orig_row: i32;
+    let mut orig_col: i32;
     while let Some((coord, steps_remaining)) = q.pop_front() {
-        let orig_row = coord.row;
-        let orig_col = coord.col;
+        orig_row = coord.row;
+        orig_col = coord.col;
         let mut row = orig_row % width_height;
         if row < 0 {
             // Change -1 to width_height - 1
             row += width_height;
         }
         let row = row as usize;
+
         let mut col = orig_col % width_height;
         if col < 0 {
             col += width_height;
@@ -86,63 +91,32 @@ pub fn day21_2(text: &str, steps: u32) -> usize {
         // TODO: use modulo to wrap-around instead of hitting the matrix edge
         // TODO: hashset is getting the same coords several times b/c coords are "fixed" before
         // getting added to the queue, when coords need to be fixed after being popped
-        // North
-        if row > 0 && matrix[row - 1][col] == '.' {
-            new_coord = Coord {
-                row: (row - 1) as i32,
-                col: col as i32,
-            };
-            q.push_back((new_coord, steps_remaining - 1));
+        //
         // Omit matrix[][] == '.' check b/c borders are always '.'
-        } else if row == 0 {
-            new_coord = Coord {
-                row: (matrix.len() - 1) as i32,
-                col: col as i32,
-            };
-            q.push_back((new_coord, steps_remaining - 1));
-        }
+        // North
+        new_coord = Coord {
+            row: orig_row - 1,
+            col: orig_col,
+        };
+        q.push_back((new_coord, steps_remaining - 1));
         // South
-        if row < matrix.len() - 1 && matrix[row + 1][col] == '.' {
-            new_coord = Coord {
-                row: (row + 1) as i32,
-                col: col as i32,
-            };
-            q.push_back((new_coord, steps_remaining - 1));
-        } else if row >= (matrix.len() - 1) {
-            new_coord = Coord {
-                row: 0 as i32,
-                col: col as i32,
-            };
-            q.push_back((new_coord, steps_remaining - 1));
-        }
+        new_coord = Coord {
+            row: orig_row + 1,
+            col: orig_col,
+        };
+        q.push_back((new_coord, steps_remaining - 1));
         // East
-        if col < matrix[0].len() - 1 && matrix[row][col + 1] == '.' {
-            new_coord = Coord {
-                row: row as i32,
-                col: (col + 1) as i32,
-            };
-            q.push_back((new_coord, steps_remaining - 1));
-        } else if col >= matrix[0].len() - 1 {
-            new_coord = Coord {
-                row: row as i32,
-                col: 0 as i32,
-            };
-            q.push_back((new_coord, steps_remaining - 1));
-        }
+        new_coord = Coord {
+            row: orig_row,
+            col: orig_col + 1,
+        };
+        q.push_back((new_coord, steps_remaining - 1));
         // West
-        if col > 0 && matrix[row][col - 1] == '.' {
-            new_coord = Coord {
-                row: row as i32,
-                col: (col - 1) as i32,
-            };
-            q.push_back((new_coord, steps_remaining - 1));
-        } else if col <= 0 {
-            new_coord = Coord {
-                row: row as i32,
-                col: (matrix[0].len() - 1) as i32,
-            };
-            q.push_back((new_coord, steps_remaining - 1));
-        }
+        new_coord = Coord {
+            row: orig_row,
+            col: orig_col - 1,
+        };
+        q.push_back((new_coord, steps_remaining - 1));
     }
 
     return count;

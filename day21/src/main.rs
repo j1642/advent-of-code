@@ -30,9 +30,9 @@ fn main() {
     assert_eq!(day21_2(example1, 6), 16);
     assert_eq!(day21_2(example1, 10), 50);
     assert_eq!(day21_2(example1, 50), 1594);
-    /*
     assert_eq!(day21_2(example1, 100), 6536);
     assert_eq!(day21_2(example1, 500), 167004);
+    /*
     assert_eq!(day21_2(example1, 1000), 668697);
     assert_eq!(day21_2(example1, 5000), 16733044);
 
