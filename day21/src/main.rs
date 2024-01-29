@@ -32,13 +32,12 @@ fn main() {
     assert_eq!(day21_2(example1, 50), 1594);
     assert_eq!(day21_2(example1, 100), 6536);
     assert_eq!(day21_2(example1, 500), 167004);
-    /*
     assert_eq!(day21_2(example1, 1000), 668697);
     assert_eq!(day21_2(example1, 5000), 16733044);
+    /*
 
-    let ans_21_2 = day21_2(&text);
+    let ans_21_2 = day21_2(&text, 26501365);
     println!("day 21_2 = {}", ans_21_2);
-    println!("           4021 < ans");
-    assert_eq!(ans_21_2, 134906214068564);
+    assert_eq!(ans_21_2, );
     */
 }
