@@ -38,11 +38,11 @@ pub fn day21_1(text: &str, steps: u32) -> usize {
     return count;
 }
 
-pub fn day21_2(text: &str, steps: u32) -> usize {
+pub fn day21_2(text: &str, steps: u32, matrix_dimension: u32) -> usize {
     // Return the amount of possible positions after taking X orthogonal
     // steps from the starting position, assuming the input is
     // infinitely repeating horizontally and vertically
-    let matrix: Vec<Vec<u8>> = build_5x5_matrix(text);
+    let matrix: Vec<Vec<u8>> = build_n_by_n_matrix(text, matrix_dimension);
     assert_eq!(matrix.len(), matrix[0].len());
     let start_coord = Coord {
         row: (matrix.len() / 2) as i32,
@@ -197,23 +197,22 @@ fn build_matrix(text: &str) -> Vec<Vec<u8>> {
     return matrix;
 }
 
-fn build_5x5_matrix(text: &str) -> Vec<Vec<u8>> {
+fn build_n_by_n_matrix(text: &str, mut n: u32) -> Vec<Vec<u8>> {
+    n -= 1;
     let mut matrix = build_matrix(text);
     // Change start coord from 'S' to '.'
     let orig_width_height = matrix.len();
 
-    // Change width to 5x original width
+    // Increase width
     for i in 0..matrix.len() {
-        matrix[i].extend_from_within(0..orig_width_height);
-        matrix[i].extend_from_within(0..orig_width_height);
-        matrix[i].extend_from_within(0..orig_width_height);
-        matrix[i].extend_from_within(0..orig_width_height);
+        for _ in 0..n {
+            matrix[i].extend_from_within(0..orig_width_height);
+        }
     }
-    // Change height to 5x original height
-    matrix.extend_from_within(0..orig_width_height);
-    matrix.extend_from_within(0..orig_width_height);
-    matrix.extend_from_within(0..orig_width_height);
-    matrix.extend_from_within(0..orig_width_height);
+    // Increase height
+    for _ in 0..n {
+        matrix.extend_from_within(0..orig_width_height);
+    }
 
     return matrix;
 }
