@@ -7,3 +7,4 @@ Learning Rust by solving Advent of Code problems
 - 12
 - 17
 - 18.2
+- 21.2
