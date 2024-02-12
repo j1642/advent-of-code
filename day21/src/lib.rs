@@ -1,9 +1,10 @@
 use std::collections::{HashSet, VecDeque};
 
-pub fn day21_1(text: &str, steps: u32) -> usize {
+pub fn day21_1(text: &str, steps: u32, dimension: u32) -> usize {
     // Return the amount of possible positions after taking X orthogonal
     // steps from the starting position
-    let mut matrix: Vec<Vec<u8>> = build_matrix(text);
+    //let mut matrix: Vec<Vec<u8>> = build_matrix(text);
+    let mut matrix: Vec<Vec<u8>> = build_n_by_n_matrix(text, dimension);
     // Assume the input is a square with odd-length sides,
     // and the start coord is the middle coordinate
     assert_eq!(matrix.len(), matrix[0].len());

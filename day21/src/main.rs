@@ -16,12 +16,12 @@ fn main() {
 .##..##.##.
 ...........";
 
-    assert_eq!(day21_1(example1, 1), 2);
-    assert_eq!(day21_1(example1, 2), 4);
-    assert_eq!(day21_1(example1, 3), 6);
-    assert_eq!(day21_1(example1, 6), 16);
+    assert_eq!(day21_1(example1, 1, 1), 2);
+    assert_eq!(day21_1(example1, 2, 1), 4);
+    assert_eq!(day21_1(example1, 3, 1), 6);
+    assert_eq!(day21_1(example1, 6, 1), 16);
 
-    let ans_21_1 = day21_1(&text, 64);
+    let ans_21_1 = day21_1(&text, 64, 1);
     println!("day 21_1 = {}", ans_21_1);
     assert_eq!(ans_21_1, 3503);
 
