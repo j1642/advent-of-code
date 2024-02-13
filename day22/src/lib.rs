@@ -42,6 +42,8 @@ fn drop_blocks(blocks: &mut Vec<Block>) {
             .unwrap()
     });
 
+    let mut neighbor_idxs: Vec<Vec<usize>> = vec![vec![]; blocks.len()];
+
     for i in 0..blocks.len() {
         let mut block = blocks[i].clone();
         if block.start == block.end {
@@ -95,6 +97,7 @@ fn drop_blocks(blocks: &mut Vec<Block>) {
         }
 
         // while there is no touched block below, decrement start and end z
+        let mut can_fall_more = true;
         for j in (0..i).rev() {
             let mut bottom_cubes: Vec<Point> = vec![];
             if blocks[j].start.x != blocks[j].end.x {
@@ -121,30 +124,39 @@ fn drop_blocks(blocks: &mut Vec<Block>) {
                 });
             }
 
-            // Consider intersection of sets instead of n^2 search
-            let mut can_fall_more = true;
+            // TODO: Consider intersection of sets instead of 1/2 n^2 search
             for top_cube in &top_cubes {
                 for bottom_cube in &bottom_cubes {
-                    if top_cube.x == bottom_cube.x && top_cube.y == bottom_cube.y {
+                    if top_cube.x == bottom_cube.x
+                        && top_cube.y == bottom_cube.y
+                        && top_cube.z == bottom_cube.z + 1
+                    {
+                        //println!("top z = {}, bot z = {}", top_cube.z, bottom_cube.z);
                         //assert!(top_cube.z == bottom_cube.z + 1);
-                        //println!("curr: {:?}", block);
-                        println!("top: {:?}, bott: {:?}", top_cube, bottom_cube);
+                        //println!("top: {:?}, bott: {:?}", top_cube, bottom_cube);
                         can_fall_more = false;
+                        neighbor_idxs[i].push(j);
+                        // Break because we already know blocks[j] is a neighbor
                         break;
-                        // TODO: instead of breaking, continue to find all neighbors
                     }
                 }
                 if !can_fall_more {
+                    // Break because we already know blocks[j] is a neighbor
                     break;
                 }
             }
             if !can_fall_more {
-                break;
+                //break;
+                // Check if next block, blocks[j+1], is a neighbor to blocks[i]
+                continue;
             }
 
             if can_fall_more {
                 block.start.z -= 1;
                 block.end.z -= 1;
+                for k in 0..top_cubes.len() {
+                    top_cubes[k].z -= 1;
+                }
                 println!(
                     "decrementing block {i}, start.z={}, end.z={}",
                     block.start.z, block.end.z
@@ -157,6 +169,9 @@ fn drop_blocks(blocks: &mut Vec<Block>) {
 
         // Replace old block with the changed clone. Avoids mixing (im)mutable borrowing
         blocks[i] = block;
+    }
+    for i in neighbor_idxs {
+        println!("{:?}", i);
     }
 }
 
