@@ -12,11 +12,11 @@ fn main() {
 0,1,6~2,1,6
 1,1,8~1,1,9";
 
-    assert_eq!(day22_1(example1), 2);
+    assert_eq!(day22_1(example1), 5);
 
     let ans_22_1 = day22_1(&text);
     println!("day 22_1 = {}", ans_22_1);
-    assert_eq!(ans_22_1, 3503);
+    //assert_eq!(ans_22_1, 3503);
 
     /*
     // Part 2
