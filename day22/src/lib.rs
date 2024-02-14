@@ -14,23 +14,39 @@ struct Block {
 }
 
 // Assumptions:
-// - blocks have dimensions 1x1xN
+// - blocks have dimensions 1x1xN, where N is >= 1
 
 pub fn day22_1(text: &str) -> u32 {
     let mut blocks = find_blocks(text);
-    for (i, block) in blocks.iter().enumerate() {
-        println!("i: {i},  {:?}", block);
+    for block in &blocks {
+        println!("{:?}", block);
+    }
+
+    if blocks.len() > 15 {
+        println!("fresh blocks:");
+        for i in 1400..1410 {
+            println!("{:?}", blocks[i]);
+        }
     }
     let neighbor_idxs = drop_blocks(&mut blocks);
-    for i in &neighbor_idxs {
-        println!("{:?}", i);
+
+    if blocks.len() > 15 {
+        println!("dropped and sorted blocks:");
+        for i in 1400..1410 {
+            println!("{:?}", blocks[i]);
+        }
     }
+    /*
+    for i in 0..neighbor_idxs.len() {
+        println!("{:?}", blocks[i]);
+        println!("{:?}", neighbor_idxs[i]);
+    }
+    */
     return count_destructible_blocks(blocks, neighbor_idxs);
 }
 
 fn count_destructible_blocks(blocks: Vec<Block>, neighbor_idxs: Vec<Vec<usize>>) -> u32 {
-    // TODO: determine which bricks can be destroyed without other bricks falling down
-    let mut removed_blocks_count = 0;
+    // Determine which bricks can be destroyed without other bricks falling down
     let mut hist = vec![0; blocks.len()];
 
     for lower_neighbors in &neighbor_idxs {
@@ -38,26 +54,37 @@ fn count_destructible_blocks(blocks: Vec<Block>, neighbor_idxs: Vec<Vec<usize>>)
             hist[*lower_neighbor] += 1;
         }
     }
+    if hist.len() == 7 {
+        assert!(hist == vec![2, 2, 2, 1, 1, 1, 0]);
+    }
     // `hist` is (or is similar to) counting neighbors above
-    println!("hist: {:?}", hist);
+    //println!("hist: {:?}", hist);
+
+    let mut have_match_in_hist: Vec<bool> = vec![false; blocks.len()];
+    let mut count_no_lower_neighbors = 0;
 
     for i in 0..neighbor_idxs.len() - 1 {
-        let mut has_match = false;
+        if neighbor_idxs[i].len() == 0 {
+            count_no_lower_neighbors += 1;
+            assert!(neighbor_idxs[i].len() == 0);
+            // TODO: why are so many blocks at z=1? Noticed an overlap at (1,3,1)
+            //    - lots of diff z after creating `blocks`, most are 1 or 2 after drop()
+            //println!("no lower neighbors: {:?}", blocks[i]);
+            continue;
+        }
         for j in (i + 1)..neighbor_idxs.len() {
             if neighbor_idxs[i] == neighbor_idxs[j] {
-                removed_blocks_count += 1;
-                has_match = true;
-                println!("{i} matched {j}");
+                have_match_in_hist[j] = true;
+                have_match_in_hist[i] = true;
+                //println!("{i} matched {j}");
             }
         }
-        // Include neighbor_idxs[i]
-        if has_match {
-            removed_blocks_count += 1;
-        }
     }
+    println!("no_lower_neighbors: {}", count_no_lower_neighbors);
+
     for i in 0..hist.len() {
         if hist[i] == 0 {
-            removed_blocks_count += 1;
+            have_match_in_hist[i] = true;
         }
     }
     /*
@@ -70,16 +97,22 @@ fn count_destructible_blocks(blocks: Vec<Block>, neighbor_idxs: Vec<Vec<usize>>)
         }
     }
     */
+    let mut destructible_block_count = 0;
+    for tf in have_match_in_hist {
+        if tf {
+            destructible_block_count += 1;
+        }
+    }
 
-    return removed_blocks_count;
+    return destructible_block_count;
 }
 
 fn drop_blocks(blocks: &mut Vec<Block>) -> Vec<Vec<usize>> {
     // Mutate `blocks` argument and return pseudo-adjacency matrix (lower neighbors only).
-    // Decrease each block's elavation until it rests on another block or z=1,
+    // Decrease each block's elevation until it rests on another block or z=1,
     // and find adjacent, lower blocks in same iterations
 
-    // Adjust the lowest elavation blocks first after sorting
+    // Adjust the lowest elevation blocks first after sorting
     // What about blocks aligned on z-axis? - use lower z
     // TODO: switch to sort_unstable_by if no bugs, more efficient
     blocks.sort_by(|a, b| {
@@ -87,15 +120,19 @@ fn drop_blocks(blocks: &mut Vec<Block>) -> Vec<Vec<usize>> {
             .partial_cmp(min(&b.start.z, &b.end.z))
             .unwrap()
     });
+    if blocks.len() > 15 {
+        println!("sorted blocks:");
+        for i in 1400..1410 {
+            println!("{:?}", blocks[i]);
+        }
+    }
 
     let mut neighbor_idxs: Vec<Vec<usize>> = vec![vec![]; blocks.len()];
 
     for i in 0..blocks.len() {
         let mut block = blocks[i].clone();
-        if block.start == block.end {
-            panic!("block start == block end");
-        }
-        // lowest elavation block starts at z=1 because of the examples
+
+        // lowest elevation block starts at z=1 because of the examples
         if i == 0 {
             if block.start.z > 1 {
                 let start_end_diff = block.end.z - block.start.z;
@@ -104,17 +141,6 @@ fn drop_blocks(blocks: &mut Vec<Block>) -> Vec<Vec<usize>> {
             }
             blocks[i] = block;
             continue;
-        }
-
-        // Block falls to just above its lower neighbor
-        if block.start.z > (1 + blocks[i - 1].end.z) {
-            let start_end_diff = block.end.z - block.start.z;
-            block.start.z = 1 + blocks[i - 1].end.z;
-            block.end.z = block.start.z + start_end_diff;
-        }
-        // TODO: remove at the end
-        if block.start == block.end {
-            panic!("block start == block end: {:?}", block.start);
         }
 
         let mut top_cubes: Vec<Point> = vec![];
@@ -175,13 +201,24 @@ fn drop_blocks(blocks: &mut Vec<Block>) -> Vec<Vec<usize>> {
                 for bottom_cube in &bottom_cubes {
                     if top_cube.x == bottom_cube.x
                         && top_cube.y == bottom_cube.y
-                        && top_cube.z == bottom_cube.z + 1
+                        && top_cube.z > bottom_cube.z
                     {
-                        //println!("top z = {}, bot z = {}", top_cube.z, bottom_cube.z);
-                        //assert!(top_cube.z == bottom_cube.z + 1);
-                        //println!("top: {:?}, bott: {:?}", top_cube, bottom_cube);
-                        can_fall_more = false;
+                        if !can_fall_more {
+                            if block.start.z == bottom_cube.z + 1 {
+                                neighbor_idxs[i].push(j);
+                            }
+                            break;
+                        }
                         neighbor_idxs[i].push(j);
+                        can_fall_more = false;
+
+                        // Block falls to just above its lower neighbor
+                        //println!("i = {i}");
+                        //println!("b.start: {:?}, b.end: {:?}", block.start, block.end);
+                        let start_end_diff = block.end.z - block.start.z;
+                        block.start.z = bottom_cube.z + 1;
+                        block.end.z = block.start.z + start_end_diff;
+
                         // Break because we already know blocks[j] is a neighbor
                         break;
                     }
@@ -191,29 +228,33 @@ fn drop_blocks(blocks: &mut Vec<Block>) -> Vec<Vec<usize>> {
                     break;
                 }
             }
-            if !can_fall_more {
-                //break;
-                // Check if next block, blocks[j+1], is a neighbor to blocks[i]
-                continue;
-            }
-
             if block.start.z == 1 {
                 break;
             }
+
             if can_fall_more {
-                block.start.z -= 1;
-                block.end.z -= 1;
                 for k in 0..top_cubes.len() {
+                    if top_cubes[k].z == 1 {
+                        continue;
+                    }
                     top_cubes[k].z -= 1;
                 }
-                println!(
-                    "decrementing block {i}, start.z={}, end.z={}",
-                    block.start.z, block.end.z
-                );
+            } else {
+                // Check if next block is a lower neighbor to blocks[i]
+                continue;
             }
         }
 
         // Replace old block with the changed clone. Avoids mixing (im)mutable borrowing
+        if neighbor_idxs[i].len() == 0 {
+            let start_end_diff: usize = block.end.z - block.start.z;
+            block.start.z = 1;
+            block.end.z = block.start.z + start_end_diff;
+        }
+        if block.start.z > block.end.z {
+            println!("i={i} {:?}", block);
+            panic!("start.z = {}, end.z = {}", block.start.z, block.end.z);
+        }
         blocks[i] = block;
     }
 

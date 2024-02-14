@@ -16,6 +16,7 @@ fn main() {
 
     let ans_22_1 = day22_1(&text);
     println!("day 22_1 = {}", ans_22_1);
+    println!("  answer < 1054");
     //assert_eq!(ans_22_1, 3503);
 
     /*
