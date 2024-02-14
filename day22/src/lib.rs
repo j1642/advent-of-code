@@ -18,24 +18,25 @@ struct Block {
 
 pub fn day22_1(text: &str) -> u32 {
     let mut blocks = find_blocks(text);
-    for block in &blocks {
-        println!("{:?}", block);
-    }
-
+    /*
     if blocks.len() > 15 {
         println!("fresh blocks:");
         for i in 1400..1410 {
             println!("{:?}", blocks[i]);
         }
     }
+    */
     let neighbor_idxs = drop_blocks(&mut blocks);
+    //println!("{:?}", neighbor_idxs);
 
+    /*
     if blocks.len() > 15 {
         println!("dropped and sorted blocks:");
         for i in 1400..1410 {
             println!("{:?}", blocks[i]);
         }
     }
+    */
     /*
     for i in 0..neighbor_idxs.len() {
         println!("{:?}", blocks[i]);
@@ -54,50 +55,35 @@ fn count_destructible_blocks(blocks: Vec<Block>, neighbor_idxs: Vec<Vec<usize>>)
             hist[*lower_neighbor] += 1;
         }
     }
-    if hist.len() == 7 {
+    if hist.len() < 10 {
         assert!(hist == vec![2, 2, 2, 1, 1, 1, 0]);
     }
     // `hist` is (or is similar to) counting neighbors above
     //println!("hist: {:?}", hist);
 
     let mut have_match_in_hist: Vec<bool> = vec![false; blocks.len()];
-    let mut count_no_lower_neighbors = 0;
 
     for i in 0..neighbor_idxs.len() - 1 {
         if neighbor_idxs[i].len() == 0 {
-            count_no_lower_neighbors += 1;
-            assert!(neighbor_idxs[i].len() == 0);
-            // TODO: why are so many blocks at z=1? Noticed an overlap at (1,3,1)
-            //    - lots of diff z after creating `blocks`, most are 1 or 2 after drop()
-            //println!("no lower neighbors: {:?}", blocks[i]);
             continue;
         }
+        // TODO: lower and upper neighbors need to be the same, not just lower
         for j in (i + 1)..neighbor_idxs.len() {
-            if neighbor_idxs[i] == neighbor_idxs[j] {
+            if neighbor_idxs[i] == neighbor_idxs[j] && hist[i] == hist[j] && hist[i] != 0 {
                 have_match_in_hist[j] = true;
                 have_match_in_hist[i] = true;
-                //println!("{i} matched {j}");
             }
         }
     }
-    println!("no_lower_neighbors: {}", count_no_lower_neighbors);
 
+    let mut destructible_block_count = 0;
+    // Find blocks with no blocks on top of them
     for i in 0..hist.len() {
         if hist[i] == 0 {
-            have_match_in_hist[i] = true;
+            destructible_block_count += 1;
         }
     }
-    /*
-        } else if hist[i] > 1 {
-            if neighbor_idxs[i].len() == 0 {
-            // bottom-most, supporting block; do nothing
-            } else if neighbor_idxs[i].len() > 0 {
-                removed_blocks_count += 1;
-            }
-        }
-    }
-    */
-    let mut destructible_block_count = 0;
+
     for tf in have_match_in_hist {
         if tf {
             destructible_block_count += 1;
@@ -120,12 +106,14 @@ fn drop_blocks(blocks: &mut Vec<Block>) -> Vec<Vec<usize>> {
             .partial_cmp(min(&b.start.z, &b.end.z))
             .unwrap()
     });
+    /*
     if blocks.len() > 15 {
         println!("sorted blocks:");
         for i in 1400..1410 {
             println!("{:?}", blocks[i]);
         }
     }
+    */
 
     let mut neighbor_idxs: Vec<Vec<usize>> = vec![vec![]; blocks.len()];
 
