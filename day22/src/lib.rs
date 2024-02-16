@@ -26,8 +26,14 @@ pub fn day22_1(text: &str) -> u32 {
         }
     }
     */
-    let neighbor_idxs = drop_blocks(&mut blocks);
-    //println!("{:?}", neighbor_idxs);
+    let lower_neighbor_idxs = drop_blocks(&mut blocks);
+
+    let mut upper_neighbor_idxs = vec![vec![]; blocks.len()];
+    for i in 0..lower_neighbor_idxs.len() {
+        for j in 0..lower_neighbor_idxs[i].len() {
+            upper_neighbor_idxs[lower_neighbor_idxs[i][j]].push(i);
+        }
+    }
 
     /*
     if blocks.len() > 15 {
@@ -43,40 +49,70 @@ pub fn day22_1(text: &str) -> u32 {
         println!("{:?}", neighbor_idxs[i]);
     }
     */
-    return count_destructible_blocks(blocks, neighbor_idxs);
+    return count_destructible_blocks(blocks, upper_neighbor_idxs, lower_neighbor_idxs);
 }
 
-fn count_destructible_blocks(blocks: Vec<Block>, neighbor_idxs: Vec<Vec<usize>>) -> u32 {
+fn count_destructible_blocks(
+    blocks: Vec<Block>,
+    upper_neighbor_idxs: Vec<Vec<usize>>,
+    lower_neighbor_idxs: Vec<Vec<usize>>,
+) -> u32 {
     // Determine which bricks can be destroyed without other bricks falling down
     let mut hist = vec![0; blocks.len()];
 
-    for lower_neighbors in &neighbor_idxs {
-        for lower_neighbor in lower_neighbors {
-            hist[*lower_neighbor] += 1;
+    for lower_lower_neighbors in &lower_neighbor_idxs {
+        for lower_lower_neighbor in lower_lower_neighbors {
+            hist[*lower_lower_neighbor] += 1;
         }
     }
     if hist.len() < 10 {
         assert!(hist == vec![2, 2, 2, 1, 1, 1, 0]);
     }
-    // `hist` is (or is similar to) counting neighbors above
-    //println!("hist: {:?}", hist);
 
+    // Second possible way to determine which blocks to remove. Still wrong
+    // Check each block's upper neighbors. If an upper neighbor has only one
+    // supporting block, do not destory that single supporting block.
+    let mut destructible_block_count = 0;
+    for (i, top_neighbors) in upper_neighbor_idxs.iter().enumerate() {
+        println!(
+            "upper: {:?}, lower: {:?}",
+            top_neighbors, lower_neighbor_idxs[i]
+        );
+        let mut destroy = true;
+        for blk_idx in top_neighbors {
+            if lower_neighbor_idxs[*blk_idx].len() == 1 {
+                destroy = false;
+                break;
+            }
+        }
+        if destroy {
+            println!("destroy {i}");
+            destructible_block_count += 1;
+        }
+    }
+    return destructible_block_count;
+    // `hist` is (or is similar to) counting each block's top neighbors
+
+    /*
     let mut have_match_in_hist: Vec<bool> = vec![false; blocks.len()];
 
-    for i in 0..neighbor_idxs.len() - 1 {
-        if neighbor_idxs[i].len() == 0 {
+    for i in 0..lower_neighbor_idxs.len() - 1 {
+        if lower_neighbor_idxs[i].len() == 0 {
             continue;
         }
-        // TODO: lower and upper neighbors need to be the same, not just lower
-        for j in (i + 1)..neighbor_idxs.len() {
-            if neighbor_idxs[i] == neighbor_idxs[j] && hist[i] == hist[j] && hist[i] != 0 {
+        // TODO: lower and upper lower_neighbors need to be the same, not just lower
+        for j in (i + 1)..lower_neighbor_idxs.len() {
+            if lower_neighbor_idxs[i] == lower_neighbor_idxs[j]
+                && upper_neighbor_idxs[i] == upper_neighbor_idxs[j]
+                && hist[i] == hist[j]
+                && hist[i] != 0
+            {
                 have_match_in_hist[j] = true;
                 have_match_in_hist[i] = true;
             }
         }
     }
 
-    let mut destructible_block_count = 0;
     // Find blocks with no blocks on top of them
     for i in 0..hist.len() {
         if hist[i] == 0 {
@@ -91,6 +127,7 @@ fn count_destructible_blocks(blocks: Vec<Block>, neighbor_idxs: Vec<Vec<usize>>)
     }
 
     return destructible_block_count;
+    */
 }
 
 fn drop_blocks(blocks: &mut Vec<Block>) -> Vec<Vec<usize>> {
