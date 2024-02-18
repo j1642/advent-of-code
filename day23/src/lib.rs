@@ -43,19 +43,18 @@ pub fn day23_1(text: &str) -> u32 {
         if matrix[position.row][position.col] == 'O' {
             continue;
         }
-        if matrix[position.row][position.col] == '#' {
-            continue;
-        }
 
         println!("{:?}, {}", position, matrix[position.row][position.col]);
         for row in &mut *matrix {
             println!("{:?}", row);
         }
-        //thread::sleep(time::Duration::from_millis(200));
+        thread::sleep(time::Duration::from_millis(200));
 
         count += 1;
 
+        let mut is_position_vertex = false;
         if vertices.contains(&position) {
+            is_position_vertex = true;
             println!("found vertex");
             for (i, vertex) in vertices.iter().enumerate() {
                 if &position == vertex {
@@ -80,6 +79,8 @@ pub fn day23_1(text: &str) -> u32 {
 
             count = 0;
             matrix[position.row][position.col] = '#';
+        } else if matrix[position.row][position.col] == '#' {
+            continue;
         }
 
         match matrix[position.row][position.col] {
@@ -93,7 +94,7 @@ pub fn day23_1(text: &str) -> u32 {
                     col: position.col + 1,
                 };
                 if matrix[new_pos.row][new_pos.col] != 'O'
-                    && matrix[new_pos.row][new_pos.col] != '#'
+                    && (matrix[new_pos.row][new_pos.col] != '#' || vertices.contains(&new_pos))
                 {
                     println!("added: {:?}, {}", new_pos, matrix[new_pos.row][new_pos.col]);
                     stack.push(Args {
@@ -110,7 +111,7 @@ pub fn day23_1(text: &str) -> u32 {
                     col: position.col,
                 };
                 if matrix[new_pos.row][new_pos.col] != 'O'
-                    && matrix[new_pos.row][new_pos.col] != '#'
+                    && (matrix[new_pos.row][new_pos.col] != '#' || vertices.contains(&new_pos))
                 {
                     println!("added: {:?}, {}", new_pos, matrix[new_pos.row][new_pos.col]);
                     stack.push(Args {
@@ -127,7 +128,7 @@ pub fn day23_1(text: &str) -> u32 {
                     col: position.col - 1,
                 };
                 if matrix[new_pos.row][new_pos.col] != 'O'
-                    && matrix[new_pos.row][new_pos.col] != '#'
+                    && (matrix[new_pos.row][new_pos.col] != '#' || vertices.contains(&new_pos))
                 {
                     println!("added: {:?}, {}", new_pos, matrix[new_pos.row][new_pos.col]);
                     stack.push(Args {
@@ -159,9 +160,25 @@ pub fn day23_1(text: &str) -> u32 {
             row: position.row,
             col: position.col - 1,
         });
+
+        // Avoid infinite loops by removing west and north movements
+        if is_position_vertex {
+            new_positions.pop();
+            new_positions.remove(0);
+        }
+        if new_positions.len() == 4 && matrix[new_positions[0].row][new_positions[0].col] == 'v' {
+            new_positions.remove(0);
+        } else if new_positions.len() == 4
+            && matrix[new_positions[3].row][new_positions[3].col] == '>'
+        {
+            new_positions.pop();
+        }
+
         for new_pos in new_positions {
-            if matrix[new_pos.row][new_pos.col] != 'O' && matrix[new_pos.row][new_pos.col] != '#' {
-                //println!("added: {:?}, {}", new_pos, matrix[new_pos.row][new_pos.col]);
+            if matrix[new_pos.row][new_pos.col] != 'O'
+                && (matrix[new_pos.row][new_pos.col] != '#' || vertices.contains(&new_pos))
+            {
+                println!("added: {:?}, {}", new_pos, matrix[new_pos.row][new_pos.col]);
                 stack.push(Args {
                     count: count,
                     position: new_pos,
@@ -175,7 +192,10 @@ pub fn day23_1(text: &str) -> u32 {
         }
     }
 
-    println!("{:?}", edge_weights);
+    // TODO: add vertices to stack even if they are #
+    for i in 0..vertices.len() {
+        println!("v: {:?}, e: {:?}", vertices[i], edge_weights[i]);
+    }
     return 0;
 }
 
