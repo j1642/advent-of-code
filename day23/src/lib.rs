@@ -1,4 +1,4 @@
-use std::collections::VecDeque;
+use std::{thread, time};
 
 #[derive(Debug, PartialEq, Clone)]
 struct Coord {
@@ -19,36 +19,44 @@ pub fn day23_1(text: &str) -> u32 {
     let end = vertices[1].clone();
 
     // Prevent recursing out of the matrix
-    matrix[start.row][start.col] = 'x';
+    matrix[start.row][start.col] = 'O';
     start.row += 1;
 
     // TODO: Can't prevent all back-tracking b/c the longest path may use some of the same squares
     // as a shorter path
     // New approach: make a graph, each intersection of <>v is a vertex,
     // and the path b/w each intersection is a edge with a weight (distance)
+    //
+    // Use DFS over BFS so only one path of 'O' is in use at any time
     let mut edge_weights: Vec<Vec<u32>> = vec![vec![0; vertices.len()]; vertices.len()];
-    let mut q: VecDeque<Args> = VecDeque::new();
-    q.push_back(Args {
+    let mut stack: Vec<Args> = Vec::new();
+    stack.push(Args {
         count: 1,
         position: start,
         last_visited_idx: 0,
     });
 
-    while let Some(args) = q.pop_front() {
+    while let Some(args) = stack.pop() {
         let (mut count, position, mut last_visited_idx) =
             (args.count, args.position, args.last_visited_idx);
 
-        if matrix[position.row][position.col] == '#' {
+        if matrix[position.row][position.col] == 'O' {
             continue;
-        } else if matrix[position.row][position.col] == 'x' {
+        }
+        if matrix[position.row][position.col] == '#' {
             continue;
         }
 
-        println!("{:?}", position);
+        println!("{:?}, {}", position, matrix[position.row][position.col]);
+        for row in &mut *matrix {
+            println!("{:?}", row);
+        }
+        //thread::sleep(time::Duration::from_millis(200));
 
         count += 1;
 
         if vertices.contains(&position) {
+            println!("found vertex");
             for (i, vertex) in vertices.iter().enumerate() {
                 if &position == vertex {
                     edge_weights[i][last_visited_idx] = count;
@@ -56,20 +64,21 @@ pub fn day23_1(text: &str) -> u32 {
                     last_visited_idx = i;
                 }
             }
-            // once a weight is added, remove all 'x' from the matrix
-            for row in 0..matrix.len() {
-                for col in 0..matrix[0].len() {
-                    if matrix[row][col] == 'x' {
-                        matrix[row][col] = '.';
-                    }
-                }
-            }
             if end == position {
                 println!("returning from end");
                 continue;
             }
-            count = 0;
 
+            // once a weight is added, remove all 'O' from the matrix
+            for row in 0..matrix.len() {
+                for col in 0..matrix[0].len() {
+                    if matrix[row][col] == 'O' {
+                        matrix[row][col] = '.';
+                    }
+                }
+            }
+
+            count = 0;
             matrix[position.row][position.col] = '#';
         }
 
@@ -83,12 +92,16 @@ pub fn day23_1(text: &str) -> u32 {
                     row: position.row,
                     col: position.col + 1,
                 };
-                q.push_back(Args {
-                    count: count,
-                    position: new_pos,
-                    last_visited_idx: last_visited_idx,
-                });
-                matrix[position.row][position.col] = '#';
+                if matrix[new_pos.row][new_pos.col] != 'O'
+                    && matrix[new_pos.row][new_pos.col] != '#'
+                {
+                    println!("added: {:?}, {}", new_pos, matrix[new_pos.row][new_pos.col]);
+                    stack.push(Args {
+                        count: count,
+                        position: new_pos,
+                        last_visited_idx: last_visited_idx,
+                    });
+                }
                 continue;
             }
             'v' => {
@@ -96,12 +109,16 @@ pub fn day23_1(text: &str) -> u32 {
                     row: position.row + 1,
                     col: position.col,
                 };
-                q.push_back(Args {
-                    count: count,
-                    position: new_pos,
-                    last_visited_idx: last_visited_idx,
-                });
-                matrix[position.row][position.col] = '#';
+                if matrix[new_pos.row][new_pos.col] != 'O'
+                    && matrix[new_pos.row][new_pos.col] != '#'
+                {
+                    println!("added: {:?}, {}", new_pos, matrix[new_pos.row][new_pos.col]);
+                    stack.push(Args {
+                        count: count,
+                        position: new_pos,
+                        last_visited_idx: last_visited_idx,
+                    });
+                }
                 continue;
             }
             '<' => {
@@ -109,12 +126,16 @@ pub fn day23_1(text: &str) -> u32 {
                     row: position.row,
                     col: position.col - 1,
                 };
-                q.push_back(Args {
-                    count: count,
-                    position: new_pos,
-                    last_visited_idx: last_visited_idx,
-                });
-                matrix[position.row][position.col] = '#';
+                if matrix[new_pos.row][new_pos.col] != 'O'
+                    && matrix[new_pos.row][new_pos.col] != '#'
+                {
+                    println!("added: {:?}, {}", new_pos, matrix[new_pos.row][new_pos.col]);
+                    stack.push(Args {
+                        count: count,
+                        position: new_pos,
+                        last_visited_idx: last_visited_idx,
+                    });
+                }
                 continue;
             }
             _ => {}
@@ -139,15 +160,18 @@ pub fn day23_1(text: &str) -> u32 {
             col: position.col - 1,
         });
         for new_pos in new_positions {
-            q.push_back(Args {
-                count: count,
-                position: new_pos,
-                last_visited_idx: last_visited_idx,
-            });
+            if matrix[new_pos.row][new_pos.col] != 'O' && matrix[new_pos.row][new_pos.col] != '#' {
+                //println!("added: {:?}, {}", new_pos, matrix[new_pos.row][new_pos.col]);
+                stack.push(Args {
+                    count: count,
+                    position: new_pos,
+                    last_visited_idx: last_visited_idx,
+                });
+            }
         }
 
         if matrix[position.row][position.col] == '.' {
-            matrix[position.row][position.col] = 'x';
+            matrix[position.row][position.col] = 'O';
         }
     }
 
