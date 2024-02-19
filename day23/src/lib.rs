@@ -29,7 +29,7 @@ pub fn day23_1(text: &str) -> u32 {
     // and the path b/w each intersection is a edge with a weight (distance)
     //
     // Use DFS over BFS so only one path of 'O' is in use at any time
-    let mut edge_weights: Vec<Vec<u32>> = vec![vec![0; vertices.len()]; vertices.len()];
+    let mut edge_weights: Vec<Vec<i32>> = vec![vec![0; vertices.len()]; vertices.len()];
     let mut stack: Vec<Args> = Vec::new();
     stack.push(Args {
         count: 0,
@@ -58,16 +58,16 @@ pub fn day23_1(text: &str) -> u32 {
         let mut is_position_vertex = false;
         if vertices.contains(&position) {
             is_position_vertex = true;
-            println!("found vertex");
+            //println!("found vertex");
             for (i, vertex) in vertices.iter().enumerate() {
                 if &position == vertex {
-                    edge_weights[i][last_visited_idx] = count;
-                    edge_weights[last_visited_idx][i] = count;
+                    edge_weights[i][last_visited_idx] = count as i32;
+                    edge_weights[last_visited_idx][i] = count as i32;
                     last_visited_idx = i;
                 }
             }
             if end == position {
-                println!("returning from end");
+                //println!("returning from end");
                 continue;
             }
 
@@ -99,7 +99,7 @@ pub fn day23_1(text: &str) -> u32 {
                 if matrix[new_pos.row][new_pos.col] != 'O'
                     && (matrix[new_pos.row][new_pos.col] != '#' || vertices.contains(&new_pos))
                 {
-                    println!("added: {:?}, {}", new_pos, matrix[new_pos.row][new_pos.col]);
+                    //println!("added: {:?}, {}", new_pos, matrix[new_pos.row][new_pos.col]);
                     stack.push(Args {
                         count: count,
                         position: new_pos,
@@ -116,7 +116,7 @@ pub fn day23_1(text: &str) -> u32 {
                 if matrix[new_pos.row][new_pos.col] != 'O'
                     && (matrix[new_pos.row][new_pos.col] != '#' || vertices.contains(&new_pos))
                 {
-                    println!("added: {:?}, {}", new_pos, matrix[new_pos.row][new_pos.col]);
+                    //println!("added: {:?}, {}", new_pos, matrix[new_pos.row][new_pos.col]);
                     stack.push(Args {
                         count: count,
                         position: new_pos,
@@ -133,7 +133,7 @@ pub fn day23_1(text: &str) -> u32 {
                 if matrix[new_pos.row][new_pos.col] != 'O'
                     && (matrix[new_pos.row][new_pos.col] != '#' || vertices.contains(&new_pos))
                 {
-                    println!("added: {:?}, {}", new_pos, matrix[new_pos.row][new_pos.col]);
+                    //println!("added: {:?}, {}", new_pos, matrix[new_pos.row][new_pos.col]);
                     stack.push(Args {
                         count: count,
                         position: new_pos,
@@ -181,7 +181,7 @@ pub fn day23_1(text: &str) -> u32 {
             if matrix[new_pos.row][new_pos.col] != 'O'
                 && (matrix[new_pos.row][new_pos.col] != '#' || vertices.contains(&new_pos))
             {
-                println!("added: {:?}, {}", new_pos, matrix[new_pos.row][new_pos.col]);
+                //println!("added: {:?}, {}", new_pos, matrix[new_pos.row][new_pos.col]);
                 stack.push(Args {
                     count: count,
                     position: new_pos,
@@ -195,15 +195,23 @@ pub fn day23_1(text: &str) -> u32 {
         }
     }
 
-    // TODO: add vertices to stack even if they are #
+    for i in 0..edge_weights.len() {
+        for j in 0..edge_weights[0].len() {
+            edge_weights[i][j] *= -1;
+        }
+    }
+
     for i in 0..vertices.len() {
         println!("v: {:?}, e: {:?}", vertices[i], edge_weights[i]);
     }
+
     return max_path_dijkstra(edge_weights);
 }
 
-fn max_path_dijkstra(edge_weights: Vec<Vec<u32>>) -> u32 {
-    let mut dists = vec![u32::MAX; edge_weights.len()];
+// TODO: try negating all weights, then using Dijkstra to find the smallest, most negative path
+// (longest path)
+fn max_path_dijkstra(edge_weights: Vec<Vec<i32>>) -> u32 {
+    let mut dists = vec![i32::MAX; edge_weights.len()];
     let mut prev_nodes = vec![0; edge_weights.len()];
 
     let mut q: VecDeque<usize> = VecDeque::new();
@@ -214,14 +222,15 @@ fn max_path_dijkstra(edge_weights: Vec<Vec<u32>>) -> u32 {
 
     while q.len() > 0 {
         // Find max dist vertex still in queue
-        let mut min_dist = u32::MAX;
-        let mut min_dist_idx: usize = 0;
+        let mut max_dist = i32::MAX;
+        let mut max_dist_idx: usize = 0;
         for vert_idx in &q {
-            if dists[*vert_idx] < min_dist {
-                min_dist = dists[*vert_idx as usize];
-                min_dist_idx = *vert_idx;
+            if dists[*vert_idx] < max_dist {
+                max_dist = dists[*vert_idx as usize];
+                max_dist_idx = *vert_idx;
             }
         }
+        let min_dist_idx = max_dist_idx;
 
         // Remove max dist vertex from queue
         let mut q_idx_to_remove = 0;
@@ -235,14 +244,17 @@ fn max_path_dijkstra(edge_weights: Vec<Vec<u32>>) -> u32 {
         // Find removed vertex's neighbors that are in queue
         let mut neighbors = vec![];
         for (i, weight) in edge_weights[min_dist_idx].iter().enumerate() {
-            if weight > &0 {
+            if weight != &0 && q.contains(&i){
                 neighbors.push(i);
             }
         }
         println!("neighbors: {:?}", neighbors);
 
         for neighbor_idx in neighbors {
-            println!("{} + {}", dists[min_dist_idx], edge_weights[min_dist_idx][neighbor_idx]);
+            println!(
+                "{} + {}",
+                dists[min_dist_idx], edge_weights[min_dist_idx][neighbor_idx]
+            );
             let alt = dists[min_dist_idx] + edge_weights[min_dist_idx][neighbor_idx];
             if alt < dists[neighbor_idx] {
                 dists[neighbor_idx] = alt;
@@ -252,7 +264,8 @@ fn max_path_dijkstra(edge_weights: Vec<Vec<u32>>) -> u32 {
     }
     println!("dists: {:?}", dists);
 
-    return dists[1];
+    dists[1] *= -1;
+    return dists[1].try_into().unwrap();
 }
 
 fn add_if_distinct(vertex: Coord, vertices: &mut Vec<Coord>) {
