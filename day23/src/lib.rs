@@ -1,3 +1,4 @@
+use std::collections::VecDeque;
 use std::{thread, time};
 
 #[derive(Debug, PartialEq, Clone)]
@@ -31,7 +32,7 @@ pub fn day23_1(text: &str) -> u32 {
     let mut edge_weights: Vec<Vec<u32>> = vec![vec![0; vertices.len()]; vertices.len()];
     let mut stack: Vec<Args> = Vec::new();
     stack.push(Args {
-        count: 1,
+        count: 0,
         position: start,
         last_visited_idx: 0,
     });
@@ -44,11 +45,13 @@ pub fn day23_1(text: &str) -> u32 {
             continue;
         }
 
+        /*
         println!("{:?}, {}", position, matrix[position.row][position.col]);
         for row in &mut *matrix {
             println!("{:?}", row);
         }
         thread::sleep(time::Duration::from_millis(200));
+        */
 
         count += 1;
 
@@ -196,7 +199,60 @@ pub fn day23_1(text: &str) -> u32 {
     for i in 0..vertices.len() {
         println!("v: {:?}, e: {:?}", vertices[i], edge_weights[i]);
     }
-    return 0;
+    return max_path_dijkstra(edge_weights);
+}
+
+fn max_path_dijkstra(edge_weights: Vec<Vec<u32>>) -> u32 {
+    let mut dists = vec![u32::MAX; edge_weights.len()];
+    let mut prev_nodes = vec![0; edge_weights.len()];
+
+    let mut q: VecDeque<usize> = VecDeque::new();
+    for vertex_idx in 0..edge_weights.len() {
+        q.push_back(vertex_idx);
+    }
+    dists[0] = 0;
+
+    while q.len() > 0 {
+        // Find max dist vertex still in queue
+        let mut min_dist = u32::MAX;
+        let mut min_dist_idx: usize = 0;
+        for vert_idx in &q {
+            if dists[*vert_idx] < min_dist {
+                min_dist = dists[*vert_idx as usize];
+                min_dist_idx = *vert_idx;
+            }
+        }
+
+        // Remove max dist vertex from queue
+        let mut q_idx_to_remove = 0;
+        for (i, vertex) in q.iter().enumerate() {
+            if *vertex == min_dist_idx {
+                q_idx_to_remove = i;
+            }
+        }
+        q.remove(q_idx_to_remove);
+
+        // Find removed vertex's neighbors that are in queue
+        let mut neighbors = vec![];
+        for (i, weight) in edge_weights[min_dist_idx].iter().enumerate() {
+            if weight > &0 {
+                neighbors.push(i);
+            }
+        }
+        println!("neighbors: {:?}", neighbors);
+
+        for neighbor_idx in neighbors {
+            println!("{} + {}", dists[min_dist_idx], edge_weights[min_dist_idx][neighbor_idx]);
+            let alt = dists[min_dist_idx] + edge_weights[min_dist_idx][neighbor_idx];
+            if alt < dists[neighbor_idx] {
+                dists[neighbor_idx] = alt;
+                prev_nodes[neighbor_idx] = min_dist_idx;
+            }
+        }
+    }
+    println!("dists: {:?}", dists);
+
+    return dists[1];
 }
 
 fn add_if_distinct(vertex: Coord, vertices: &mut Vec<Coord>) {
