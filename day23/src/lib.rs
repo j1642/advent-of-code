@@ -61,7 +61,8 @@ pub fn day23_1(text: &str) -> u32 {
             //println!("found vertex");
             for (i, vertex) in vertices.iter().enumerate() {
                 if &position == vertex {
-                    edge_weights[i][last_visited_idx] = count as i32;
+                    // BUG: Edges are one-way only!
+                    //edge_weights[i][last_visited_idx] = count as i32;
                     edge_weights[last_visited_idx][i] = count as i32;
                     last_visited_idx = i;
                 }
