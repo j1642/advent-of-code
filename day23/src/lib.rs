@@ -1,5 +1,4 @@
 use std::collections::VecDeque;
-use std::{thread, time};
 
 #[derive(Debug, PartialEq, Clone)]
 struct Coord {
@@ -23,8 +22,6 @@ pub fn day23_1(text: &str) -> u32 {
     matrix[start.row][start.col] = 'O';
     start.row += 1;
 
-    // TODO: Can't prevent all back-tracking b/c the longest path may use some of the same squares
-    // as a shorter path
     // New approach: make a graph, each intersection of <>v is a vertex,
     // and the path b/w each intersection is a edge with a weight (distance)
     //
@@ -45,34 +42,22 @@ pub fn day23_1(text: &str) -> u32 {
             continue;
         }
 
-        /*
-        println!("{:?}, {}", position, matrix[position.row][position.col]);
-        for row in &mut *matrix {
-            println!("{:?}", row);
-        }
-        thread::sleep(time::Duration::from_millis(200));
-        */
-
         count += 1;
 
         let mut is_position_vertex = false;
         if vertices.contains(&position) {
             is_position_vertex = true;
-            //println!("found vertex");
             for (i, vertex) in vertices.iter().enumerate() {
                 if &position == vertex {
-                    // BUG: Edges are one-way only!
-                    //edge_weights[i][last_visited_idx] = count as i32;
+                    // Edges are one-way only
                     edge_weights[last_visited_idx][i] = count as i32;
                     last_visited_idx = i;
                 }
             }
             if end == position {
-                //println!("returning from end");
                 continue;
             }
 
-            // once a weight is added, remove all 'O' from the matrix
             for row in 0..matrix.len() {
                 for col in 0..matrix[0].len() {
                     if matrix[row][col] == 'O' {
@@ -100,7 +85,6 @@ pub fn day23_1(text: &str) -> u32 {
                 if matrix[new_pos.row][new_pos.col] != 'O'
                     && (matrix[new_pos.row][new_pos.col] != '#' || vertices.contains(&new_pos))
                 {
-                    //println!("added: {:?}, {}", new_pos, matrix[new_pos.row][new_pos.col]);
                     stack.push(Args {
                         count: count,
                         position: new_pos,
@@ -117,7 +101,6 @@ pub fn day23_1(text: &str) -> u32 {
                 if matrix[new_pos.row][new_pos.col] != 'O'
                     && (matrix[new_pos.row][new_pos.col] != '#' || vertices.contains(&new_pos))
                 {
-                    //println!("added: {:?}, {}", new_pos, matrix[new_pos.row][new_pos.col]);
                     stack.push(Args {
                         count: count,
                         position: new_pos,
@@ -134,7 +117,6 @@ pub fn day23_1(text: &str) -> u32 {
                 if matrix[new_pos.row][new_pos.col] != 'O'
                     && (matrix[new_pos.row][new_pos.col] != '#' || vertices.contains(&new_pos))
                 {
-                    //println!("added: {:?}, {}", new_pos, matrix[new_pos.row][new_pos.col]);
                     stack.push(Args {
                         count: count,
                         position: new_pos,
@@ -182,7 +164,6 @@ pub fn day23_1(text: &str) -> u32 {
             if matrix[new_pos.row][new_pos.col] != 'O'
                 && (matrix[new_pos.row][new_pos.col] != '#' || vertices.contains(&new_pos))
             {
-                //println!("added: {:?}, {}", new_pos, matrix[new_pos.row][new_pos.col]);
                 stack.push(Args {
                     count: count,
                     position: new_pos,
@@ -196,77 +177,102 @@ pub fn day23_1(text: &str) -> u32 {
         }
     }
 
+    return find_longest_path(edge_weights);
+}
+
+fn find_longest_path(mut edge_weights: Vec<Vec<i32>>) -> u32 {
+    // Return longest path through a graph
+    // Assume all edge weights are positive
+
+    // Negate all edge weights so the longest path is the smallest,
+    // most negative path length
     for i in 0..edge_weights.len() {
         for j in 0..edge_weights[0].len() {
             edge_weights[i][j] *= -1;
         }
     }
 
-    for i in 0..vertices.len() {
-        println!("v: {:?}, e: {:?}", vertices[i], edge_weights[i]);
-    }
-
-    return max_path_dijkstra(edge_weights);
-}
-
-// TODO: try negating all weights, then using Dijkstra to find the smallest, most negative path
-// (longest path)
-fn max_path_dijkstra(edge_weights: Vec<Vec<i32>>) -> u32 {
     let mut dists = vec![i32::MAX; edge_weights.len()];
+    dists[0] = 0;
     let mut prev_nodes = vec![0; edge_weights.len()];
 
-    let mut q: VecDeque<usize> = VecDeque::new();
-    for vertex_idx in 0..edge_weights.len() {
-        q.push_back(vertex_idx);
-    }
-    dists[0] = 0;
+    let nodes = topological_sort(edge_weights.clone());
 
-    while q.len() > 0 {
-        // Find max dist vertex still in queue
-        let mut max_dist = i32::MAX;
-        let mut max_dist_idx: usize = 0;
-        for vert_idx in &q {
-            if dists[*vert_idx] < max_dist {
-                max_dist = dists[*vert_idx as usize];
-                max_dist_idx = *vert_idx;
-            }
-        }
-        let min_dist_idx = max_dist_idx;
+    for i in 0..nodes.len() {
+        let node = nodes[i];
 
-        // Remove max dist vertex from queue
-        let mut q_idx_to_remove = 0;
-        for (i, vertex) in q.iter().enumerate() {
-            if *vertex == min_dist_idx {
-                q_idx_to_remove = i;
-            }
-        }
-        q.remove(q_idx_to_remove);
-
-        // Find removed vertex's neighbors that are in queue
         let mut neighbors = vec![];
-        for (i, weight) in edge_weights[min_dist_idx].iter().enumerate() {
-            if weight != &0 && q.contains(&i){
+        for i in 0..edge_weights[node].len() {
+            if edge_weights[node][i] != 0 {
                 neighbors.push(i);
             }
         }
-        println!("neighbors: {:?}", neighbors);
 
-        for neighbor_idx in neighbors {
-            println!(
-                "{} + {}",
-                dists[min_dist_idx], edge_weights[min_dist_idx][neighbor_idx]
-            );
-            let alt = dists[min_dist_idx] + edge_weights[min_dist_idx][neighbor_idx];
-            if alt < dists[neighbor_idx] {
-                dists[neighbor_idx] = alt;
-                prev_nodes[neighbor_idx] = min_dist_idx;
+        for neighbor in neighbors {
+            let alt = dists[node] + edge_weights[node][neighbor];
+            if alt < dists[neighbor] {
+                dists[neighbor] = alt;
+                prev_nodes[neighbor] = node;
             }
         }
     }
-    println!("dists: {:?}", dists);
 
     dists[1] *= -1;
     return dists[1].try_into().unwrap();
+}
+
+fn topological_sort(mut edge_weights: Vec<Vec<i32>>) -> Vec<usize> {
+    // Kahns's algorithm, O(V + E)
+    let mut sorted = vec![];
+
+    // Find vertices without incoming edges. Must be at least 1 in a DAG
+    let mut no_parents: VecDeque<usize> = VecDeque::new();
+    for col in 0..edge_weights[0].len() {
+        let mut no_incoming_edges = true;
+        for row in 0..edge_weights.len() {
+            if edge_weights[row][col] != 0 {
+                no_incoming_edges = false;
+                break;
+            }
+        }
+        if no_incoming_edges {
+            no_parents.push_back(col);
+        }
+    }
+
+    while let Some(node) = no_parents.pop_front() {
+        sorted.push(node);
+
+        for i in 0..edge_weights[node].len() {
+            if edge_weights[node][i] != 0 {
+                let child = i;
+                edge_weights[node][i] = 0;
+
+                // Check if child has any other incoming edges
+                let mut child_still_has_edge = false;
+                for row in 0..edge_weights.len() {
+                    if edge_weights[row][child] != 0 {
+                        child_still_has_edge = true;
+                        break;
+                    }
+                }
+                if !child_still_has_edge {
+                    no_parents.push_back(child);
+                }
+            }
+        }
+    }
+
+    // Any remaining edges indicate a cycle is present
+    for i in 0..edge_weights.len() {
+        for j in 0..edge_weights[0].len() {
+            if edge_weights[i][j] != 0 {
+                panic!("graph has at least one cycle; cannot topologically sort");
+            }
+        }
+    }
+
+    return sorted;
 }
 
 fn add_if_distinct(vertex: Coord, vertices: &mut Vec<Coord>) {
@@ -291,8 +297,6 @@ fn build_matrix(text: &str) -> Vec<Vec<char>> {
 
 fn find_vertices(matrix: &Vec<Vec<char>>) -> Vec<Coord> {
     // Search the maze for intersections
-    // Assume all intersections are surrounded orthogonally by "v<>" one-way paths or walls, '#'
-    // Assume accessing a non-existent index will not happen
     let mut start = Coord { row: 0, col: 0 };
     for (i, c) in matrix[0].iter().enumerate() {
         if *c == '.' {

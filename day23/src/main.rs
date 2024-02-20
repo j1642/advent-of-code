@@ -3,7 +3,7 @@ use std::fs;
 //use std::time;
 
 fn main() {
-    //let text = fs::read_to_string("day23.txt").expect("Should have read the file");
+    let text = fs::read_to_string("day23.txt").expect("Should have read the file");
     let example = "#.#####################
 #.......#########...###
 #######.#########.#.###
@@ -30,11 +30,9 @@ fn main() {
 
     assert_eq!(day23_1(example), 94);
 
-    /*
     let ans_23_1 = day23_1(&text);
     println!("day 23_1 = {}", ans_23_1);
-    assert_eq!(ans_23_1, 490);
-    */
+    assert_eq!(ans_23_1, 2370);
 
     /*
     // Part 2
