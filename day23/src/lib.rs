@@ -16,23 +16,51 @@ pub fn day23_1(text: &str) -> u32 {
     let mut matrix = build_matrix(text);
     let vertices = find_vertices(&matrix);
     let mut start = vertices[0].clone();
-    let end = vertices[1].clone();
 
-    // Prevent recursing out of the matrix
+    // Prevent escaping the matrix
     matrix[start.row][start.col] = 'O';
     start.row += 1;
 
-    // New approach: make a graph, each intersection of <>v is a vertex,
-    // and the path b/w each intersection is a edge with a weight (distance)
-    //
-    // Use DFS over BFS so only one path of 'O' is in use at any time
-    let mut edge_weights: Vec<Vec<i32>> = vec![vec![0; vertices.len()]; vertices.len()];
+    let edge_weights = find_edge_weights(matrix, vertices, start);
+    return find_longest_dag_path(edge_weights);
+}
+
+pub fn day23_2(text: &str) -> u32 {
+    let mut matrix = build_matrix(text);
+    let vertices = find_vertices(&matrix);
+    let mut start = vertices[0].clone();
+
+    // Prevent escaping the matrix
+    matrix[start.row][start.col] = 'O';
+    start.row += 1;
+
+    let mut edge_weights = find_edge_weights(matrix, vertices, start);
+    // Graph is no longer directed
+    for row in 0..edge_weights.len() {
+        for col in 0..edge_weights[0].len() {
+            if edge_weights[row][col] != 0 {
+                edge_weights[col][row] = edge_weights[row][col]
+            }
+        }
+    }
+    // TODO: DFS to find all paths to the end (cannot visit a node twice)
+    // arithmetic find all path lengths
+    return find_longest_path(edge_weights);
+}
+
+fn find_edge_weights(
+    mut matrix: Vec<Vec<char>>,
+    vertices: Vec<Coord>,
+    start: Coord,
+) -> Vec<Vec<i32>> {
+    let end = vertices[1].clone();
     let mut stack: Vec<Args> = Vec::new();
     stack.push(Args {
         count: 0,
         position: start,
         last_visited_idx: 0,
     });
+    let mut edge_weights: Vec<Vec<i32>> = vec![vec![0; vertices.len()]; vertices.len()];
 
     while let Some(args) = stack.pop() {
         let (mut count, position, mut last_visited_idx) =
@@ -177,10 +205,54 @@ pub fn day23_1(text: &str) -> u32 {
         }
     }
 
-    return find_longest_path(edge_weights);
+    return edge_weights;
 }
 
-fn find_longest_path(mut edge_weights: Vec<Vec<i32>>) -> u32 {
+fn find_longest_path(edge_weights: Vec<Vec<i32>>) -> u32 {
+    let mut path_lengths = vec![];
+    let start_node = 0;
+    let end_node = 1;
+
+    let path = vec![];
+
+    let mut stack = vec![];
+    stack.push((start_node, path));
+
+    while let Some(items) = stack.pop() {
+        let (cur_node, mut path) = (items.0, items.1);
+        if path.contains(&cur_node) {
+            continue;
+        }
+        path.push(cur_node);
+        if cur_node == end_node {
+            let mut path_length = 0;
+            for i in 0..path.len() - 1 {
+                let node = path[i];
+                let next_node = path[i + 1];
+                path_length += edge_weights[node][next_node];
+            }
+            path_lengths.push(path_length);
+            continue;
+        }
+
+        for i in 0..edge_weights[0].len() {
+            if edge_weights[cur_node][i] != 0 {
+                stack.push((i, path.clone()));
+            }
+        }
+    }
+
+    let mut max_path_length = 0;
+    for path_length in path_lengths {
+        if path_length > max_path_length {
+            max_path_length = path_length;
+        }
+    }
+
+    return max_path_length.try_into().unwrap();
+}
+
+fn find_longest_dag_path(mut edge_weights: Vec<Vec<i32>>) -> u32 {
     // Return longest path through a graph
     // Assume all edge weights are positive
 

@@ -1,4 +1,4 @@
-use day23::day23_1; //, day23_2};
+use day23::{day23_1, day23_2};
 use std::fs;
 //use std::time;
 
@@ -34,13 +34,11 @@ fn main() {
     println!("day 23_1 = {}", ans_23_1);
     assert_eq!(ans_23_1, 2370);
 
-    /*
     // Part 2
     //env::set_var("RUST_BACKTRACE", "1");
-    assert_eq!(day23_2(example, 500), 167004);
-    assert_eq!(day23_2(example, 1000), 668697);
-    assert_eq!(day23_2(example, 5000), 16733044);
+    assert_eq!(day23_2(example), 154);
 
+    /*
     let ans_23_2 = day23_2(&text, 26501365);
     println!("day 23_2 = {}", ans_23_2);
     assert_eq!(ans_23_2, );
