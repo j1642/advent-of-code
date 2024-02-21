@@ -38,9 +38,7 @@ fn main() {
     //env::set_var("RUST_BACKTRACE", "1");
     assert_eq!(day23_2(example), 154);
 
-    /*
-    let ans_23_2 = day23_2(&text, 26501365);
+    let ans_23_2 = day23_2(&text);
     println!("day 23_2 = {}", ans_23_2);
-    assert_eq!(ans_23_2, );
-    */
+    assert_eq!(ans_23_2, 6546);
 }
