@@ -8,45 +8,48 @@ struct Node<'a> {
 }
 
 pub fn day25_1(text: &str) -> usize {
-    // Karger's algorithm
+    // Karger's algorithm, more or less
     let mut adj_matrix = build_adjacency_matrix(text);
 
-    // Record which nodes are absorbed by `supernode_contents[i]`
+    // TODO: redo in progress
     let mut supernode_contents = vec![vec![]; adj_matrix.len()];
-
     let mut collapsed_node_count = 0;
-    while collapsed_node_count < adj_matrix.len() - 2 {
-        let rand_idx = get_rand_int(adj_matrix.len() as u32);
+    let mut edges = vec![];
 
-        let mut edges = vec![];
-        for i in 0..adj_matrix[rand_idx].len() {
-            if adj_matrix[rand_idx][i] != 0 {
-                edges.push(i);
+    while collapsed_node_count < adj_matrix.len() - 2 {
+        // Iterate over all edges 1/2n^2 style.
+        edges.clear();
+        for i in 0..adj_matrix.len() - 1 {
+            for j in (i + 1)..adj_matrix[0].len() {
+                // store edges in vec n times, where n is adj_matrix[i][j]
+                for _ in 0..adj_matrix[i][j] {
+                    edges.push((i, j));
+                }
             }
         }
-        // Do not use a collapsed node
-        if edges.len() == 0 {
-            continue;
+        // Randomly select one edge (i, j) from the vec (takes advantage of algorithm's probability)
+        let rand_edge_idx = get_rand_int(edges.len() as u32);
+        let edge_idxs = edges[rand_edge_idx];
+        let expand_idx = edge_idxs.0;
+        let collapse_idx = edge_idxs.1;
+        // Cut and paste the collapsing node's outgoing edges to the expanding node
+        for i in 0..adj_matrix[collapse_idx].len() {
+            adj_matrix[expand_idx][i] += adj_matrix[collapse_idx][i];
+            adj_matrix[collapse_idx][i] = 0;
         }
-        let rand_edges_idx = get_rand_int(edges.len() as u32);
-        // Cant't remove() collapsed nodes b/c adj. matrix would not be square; would need to fix
-        // Collapse node `rand_connected_idx` into node `rand_idx`
-        let rand_connected_idx = edges[rand_edges_idx];
-        for i in 0..adj_matrix[0].len() {
-            if adj_matrix[rand_connected_idx][i] == 1
-            && adj_matrix[rand_idx][i] == 0 {
-                adj_matrix[rand_idx][i] = 1;
+        // Redirect the collapsing node's incoming edges to the expanding_node
+        for i in 0..adj_matrix.len() {
+            if adj_matrix[i][collapse_idx] > 0 {
+                adj_matrix[i][expand_idx] += adj_matrix[i][collapse_idx];
+                adj_matrix[i][collapse_idx] = 0;
             }
-            // Remove all edges from the collapsed node
-            adj_matrix[rand_connected_idx][i] = 0;
-            // Remove all edges to the collapsed node
-            adj_matrix[i][rand_connected_idx] = 0;
-            // Remove loops from and to the same node
-            adj_matrix[rand_idx][rand_idx] = 0;
         }
-        println!("collapsed {rand_connected_idx} into {rand_idx}");
+        // Remove edge from self, to self
+        adj_matrix[expand_idx][expand_idx] = 0;
+        supernode_contents[expand_idx].push(collapse_idx);
+
+        println!("collapsed {} into {}", collapse_idx, expand_idx);
         collapsed_node_count += 1;
-        supernode_contents[rand_idx].push(rand_connected_idx);
     }
 
     // Centralize collapsed node contents into their parent's index
@@ -97,10 +100,9 @@ fn build_adjacency_matrix(text: &str) -> Vec<Vec<u8>> {
     let mut new_nodes = vec![];
     for node in nodes.values() {
         for conn in node.connections.iter() {
-            if !nodes.contains_key(conn)
-                && !new_nodes.iter().any(|x: &(&str, Node)| x.0 == *conn) {
-                new_nodes.push(
-                    (*conn,
+            if !nodes.contains_key(conn) && !new_nodes.iter().any(|x: &(&str, Node)| x.0 == *conn) {
+                new_nodes.push((
+                    *conn,
                     Node {
                         idx: idx,
                         connections: vec![],
