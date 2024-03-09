@@ -2,9 +2,6 @@
 
 Learning Rust by solving Advent of Code problems
 
-#### Partially complete
+#### Works in progress or not yet attempted
 
-- 12
-- 17
-- 18.2
-- 21.2
+- 12, 17, 18, 21, 22, 24, 25
