@@ -10,9 +10,8 @@ fn main() {
 
     let test = "xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo()?mul(8,5))";
     assert_eq!(day03_2(test), 48);
-    /*
-    let day03_3_ans = day03_3(&text);
-    println!("day 3.3 = {day03_3_ans}");
-    assert_eq!(day03_3_ans, 381);
-    */
+
+    let day03_2_ans = day03_2(&text);
+    println!("day 3.2 = {day03_2_ans}");
+    assert_eq!(day03_2_ans, 93729253);
 }

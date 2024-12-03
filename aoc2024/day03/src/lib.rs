@@ -28,7 +28,7 @@ pub fn day03_2(text: &str) -> u32 {
 
 fn recurse(all_chars: &mut Chars) -> u32 {
     let mut sum_of_pdts = 0;
-    let mut is_enabled = true;
+    let mut mode = Mode::Enabled;
 
     while let Some(c) = all_chars.next() {
     //for c in all_chars {
@@ -36,12 +36,20 @@ fn recurse(all_chars: &mut Chars) -> u32 {
             match found_m(all_chars) {
                 None=>{continue},
                 Some(num) => {
-                    sum_of_pdts += num;
+                    if mode == Mode::Enabled {
+                        sum_of_pdts += num;
+                    }
                 },
             }
         } else if c == 'd' {
             //look for o
             // is_enabled = found_d()
+            match found_d(all_chars) {
+                None=>{continue},
+                Some(onoff) => {
+                    mode = onoff;
+                },
+            }
         }
     }
 
@@ -59,11 +67,9 @@ fn found_m(all_chars: &mut Chars) -> Option<u32> {
         }
     }
 
-    println!("found mul(");
     if is_valid {
         return get_product(all_chars);
     }
-    println!("returning None from found_m()");
     return None
 }
 
@@ -82,20 +88,45 @@ fn get_product(all_chars: &mut Chars) -> Option<u32> {
         } else {
             if next == ',' && first == 0 && second == 0 {
                 first = num;
-                println!("first num: {}", first);
                 num = 0;
-            } else if next == ')' {//&& first != 0 && second == 0 {
-                //println!("{}, {}", first, second);
+            } else if next == ')' && first != 0 && second == 0 {
                 second = num;
-                println!("2nd num: {}", second);
                 // is_valid still true
                 break;
             } else {
                 is_valid = false;
-                println!("invalidated at '{}'", next);
             }
         }
     }
 
     return Some(first * second);
+}
+
+#[derive(PartialEq)]
+enum Mode {
+    Enabled,
+    Disabled,
+}
+
+fn found_d(all_chars: &mut Chars) -> Option<Mode>{
+    let mut found_do = false;
+    let mut found_dont = false;
+    let keys = ['o', 'n', '\'', 't'];
+    for i in 0..keys.len() {
+        let next = all_chars.next().unwrap();
+        if next != keys[i] {
+            break;
+        } else if i == 0 {
+            found_do = true;
+        } else if i == 3 {
+            found_dont = true;
+        }
+    }
+
+    if found_dont {
+        return Some(Mode::Disabled);
+    } else if found_do {
+        return Some(Mode::Enabled);
+    }
+    return None;
 }
