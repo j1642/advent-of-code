@@ -16,8 +16,7 @@ fn main() {
     assert_eq!(day2_1_ans, 326);
 
     assert_eq!(day02_2(test), 4);
-    /*
     let day02_2_ans = day02_2(&text);
     println!("day 2.2 = {day02_2_ans}");
-    */
+    assert_eq!(day02_2_ans, 381);
 }
