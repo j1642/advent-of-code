@@ -6,7 +6,7 @@ pub fn day04_1(text: &str) -> i32 {
     for row in 0..matrix.len() {
         for col in 0..matrix[0].len() {
             if matrix[row][col] == 'X' {
-                let count = count_xmas('M', 0, row, col, &matrix);
+                let count = count_xmas1('M', 0, row, col, &matrix);
                 found_xmas_count += count;
             }
         }
@@ -21,7 +21,7 @@ pub fn day04_1(text: &str) -> i32 {
 // 789
 // 4X6
 // 123
-fn count_xmas(look_for: char, mut search_direction: i32, row: usize, col: usize, matrix: &Vec<Vec<char>>) -> i32 {
+fn count_xmas1(look_for: char, mut search_direction: i32, row: usize, col: usize, matrix: &Vec<Vec<char>>) -> i32 {
     assert!(matrix.len() > 1);
     assert!(matrix[0].len() > 1);
 
@@ -46,7 +46,8 @@ fn count_xmas(look_for: char, mut search_direction: i32, row: usize, col: usize,
         directions.retain(|&x| x != 3);
     }
 
-    let dir_row_col: [(i32, &str, &str); 8] = [(7, "dec", "dec"),
+    let dir_row_col: [(i32, &str, &str); 8] = [
+        (7, "dec", "dec"),
         (8, "dec", "no"),
         (9, "dec", "inc"),
         (4, "no", "dec"),
@@ -61,6 +62,7 @@ fn count_xmas(look_for: char, mut search_direction: i32, row: usize, col: usize,
     for dir in directions {
         let mut search_row = row;
         let mut search_col = col;
+
         for (d, r, c) in dir_row_col {
             if d == dir {
                 match r {
@@ -82,17 +84,74 @@ fn count_xmas(look_for: char, mut search_direction: i32, row: usize, col: usize,
         }
         if matrix[search_row][search_col] == look_for && dir == search_direction {
             match look_for {
-                //'X' => return look_for_xmas('M', search_row, search_col, matrix),
-                'M' => found_count += count_xmas('A', dir, search_row, search_col, matrix),
-                'A' => return count_xmas('S', dir, search_row, search_col, matrix),
+                'M' => found_count += count_xmas1('A', dir, search_row, search_col, matrix),
+                'A' => return count_xmas1('S', dir, search_row, search_col, matrix),
                 'S' => return 1,
                 _ => return 0
             }
-            
+        }
+    }
+    return found_count;
+}
+
+pub fn day04_2(text: &str) -> i32 {
+    let matrix = str_to_matrix(text);
+    let mut found_xmas_count = 0;
+
+    for row in 1..matrix.len() - 1 {
+        for col in 1..matrix[0].len() - 1 {
+            if matrix[row][col] == 'A' {
+                if found_xmas2(row, col, &matrix) {
+                    found_xmas_count += 1;
+                }
+            }
+        }
+    }
+    return found_xmas_count;
+}
+
+fn found_xmas2(row: usize, col: usize, matrix: &Vec<Vec<char>>) -> bool {
+    assert!(matrix.len() > 2);
+    assert!(matrix[0].len() > 2);
+    assert!(row > 0);
+    assert!(col > 0);
+    assert!(row < matrix.len() - 1);
+    assert!(col < matrix[0].len() - 1);
+
+    let dir_row_col: [(i32, usize, usize); 4] = [
+        (7, row-1, col-1),
+        (9, row-1, col+1),
+        (1, row+1, col-1),
+        (3, row+1, col+1),
+    ];
+
+    let mut diag_neighbors: [char; 4] = ['?'; 4];
+
+    for i in 0..dir_row_col.len() {
+        let (_, search_row, search_col) = dir_row_col[i];
+
+        let found_char = matrix[search_row][search_col];
+        if found_char == 'S' || found_char == 'M' {
+            diag_neighbors[i] = found_char;
+        } else {
+            return false;
         }
     }
 
-    return found_count;
+    // ordered as 7, 9, 1, 3
+    let top_l = diag_neighbors[0];
+    let top_r = diag_neighbors[1];
+    let bot_r = diag_neighbors[3];
+    let bot_l = diag_neighbors[2];
+
+    if top_l == top_r || top_l == bot_l {
+        if bot_r == top_r || bot_r == bot_l {
+            if top_l != bot_r && top_r != bot_l {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 fn str_to_matrix(text: &str) -> Vec<Vec<char>> {
@@ -103,6 +162,5 @@ fn str_to_matrix(text: &str) -> Vec<Vec<char>> {
             matrix[i].push(c);
         }
     }
-
     return matrix;
 }
