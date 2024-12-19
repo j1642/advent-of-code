@@ -6,8 +6,6 @@ pub fn day05_1(text: &str) -> i32 {
     let mut rules: HashMap<&str,Vec<&str>> = HashMap::new();
     for line in rules_text.lines() {
         let (l, r) = line.split_once('|').unwrap();
-        //let left = l.parse::<i32>().unwrap();
-        //let right = r.parse::<i32>().unwrap();
 
         if let Some(v) = rules.get_mut(l) {
             v.push(r);
@@ -28,7 +26,6 @@ pub fn day05_1(text: &str) -> i32 {
                 for j in 0..i {
                     if rule.iter().any(|x| x == &pages[j]) {
                         is_correct_order = false;
-                        println!("false: {line}");
                         break
                     }
                 }
@@ -39,15 +36,12 @@ pub fn day05_1(text: &str) -> i32 {
         }
         if is_correct_order {
             sum += pages[pages.len() / 2].parse::<i32>().unwrap();
-            println!("true: {line}");
         }
-        //println!("page: {:?}", pages);
     }
 
-    /*
-    for k in rules.keys() {
-        println!("{k}: {:?}", rules.get(k).unwrap());
-    }
-    */
     return sum;
+}
+
+pub fn day05_2(text: &str) -> i32 {
+    return 0;
 }
