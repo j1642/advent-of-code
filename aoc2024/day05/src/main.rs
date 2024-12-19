@@ -7,10 +7,6 @@ fn main() {
     assert_eq!(day05_1_ans, 5509);
     println!("5.1 = {day05_1_ans}");
 
-    let day05_2_ans = day05_2(&text);
-    //assert_eq!(day05_2_ans, );
-    println!("5.2 = {day05_2_ans}");
-
     let check = "47|53
 97|13
 97|61
@@ -42,4 +38,11 @@ fn main() {
 
     let check_ans = day05_1(check);
     assert_eq!(check_ans, 143);
+
+    let day05_2_check = day05_2(&check);
+    assert_eq!(day05_2_check, 123);
+
+    let day05_2_ans = day05_2(&text);
+    assert_eq!(day05_2_ans, 4407);
+    println!("5.2 = {day05_2_ans}");
 }
